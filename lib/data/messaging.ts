@@ -1,10 +1,13 @@
-import type { RealtimePostgresInsertPayload } from '@supabase/supabase-js';
+import type { Tables } from '@biltme/backend';
 
-import type { Tables } from '@/lib/database.types';
-import { supabase } from '@/lib/supabase';
+import { bilt } from '@/lib/backend';
+
+type MessageInsertPayload = {
+  new: Tables<'messages'>;
+};
 
 export async function startDirectConversation(otherUserId: string) {
-  const { data, error } = await supabase.rpc('start_direct_conversation', {
+  const { data, error } = await bilt.rpc('start_direct_conversation', {
     other_user_id: otherUserId,
   });
   if (error) throw error;
@@ -12,7 +15,7 @@ export async function startDirectConversation(otherUserId: string) {
 }
 
 export async function getConversationMessages(conversationId: string, before?: string) {
-  let query = supabase
+  let query = bilt
     .from('messages')
     .select('*')
     .eq('conversation_id', conversationId)
@@ -32,7 +35,7 @@ export async function sendMessage(input: {
   conversationId: string;
   senderId: string;
 }) {
-  const { data, error } = await supabase
+  const { data, error } = await bilt
     .from('messages')
     .insert({
       body: input.body.trim(),
@@ -47,7 +50,7 @@ export async function sendMessage(input: {
 }
 
 export async function markConversationRead(conversationId: string, userId: string) {
-  const { error } = await supabase
+  const { error } = await bilt
     .from('conversation_members')
     .update({ last_read_at: new Date().toISOString() })
     .eq('conversation_id', conversationId)
@@ -59,7 +62,7 @@ export function subscribeToMessages(
   conversationId: string,
   onMessage: (message: Tables<'messages'>) => void,
 ) {
-  const channel = supabase
+  const channel = bilt
     .channel(`conversation:${conversationId}`)
     .on(
       'postgres_changes',
@@ -69,11 +72,11 @@ export function subscribeToMessages(
         table: 'messages',
         filter: `conversation_id=eq.${conversationId}`,
       },
-      (payload: RealtimePostgresInsertPayload<Tables<'messages'>>) => onMessage(payload.new),
+      (payload: MessageInsertPayload) => onMessage(payload.new),
     )
     .subscribe();
 
   return () => {
-    void supabase.removeChannel(channel);
+    void bilt.removeChannel(channel);
   };
 }

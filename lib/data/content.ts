@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef } from 'react';
 
-import { supabase } from '@/lib/supabase';
+import { bilt } from '@/lib/backend';
 
 export const contentKeys = {
   all: ['content'] as const,
@@ -12,7 +12,7 @@ export const contentKeys = {
 };
 
 export async function getVenues() {
-  const { data, error } = await supabase
+  const { data, error } = await bilt
     .from('venues')
     .select('*')
     .eq('published', true)
@@ -22,7 +22,7 @@ export async function getVenues() {
 }
 
 export async function getUpcomingMeetups() {
-  const { data, error } = await supabase
+  const { data, error } = await bilt
     .from('meetups')
     .select('*')
     .eq('published', true)
@@ -33,7 +33,7 @@ export async function getUpcomingMeetups() {
 }
 
 export async function getCurrentOfficialEvent() {
-  const { data, error } = await supabase
+  const { data, error } = await bilt
     .from('official_events')
     .select('*')
     .eq('published', true)
@@ -44,7 +44,7 @@ export async function getCurrentOfficialEvent() {
 }
 
 export async function getMembershipPlans() {
-  const { data, error } = await supabase
+  const { data, error } = await bilt
     .from('membership_plans')
     .select('*')
     .eq('active', true)
@@ -54,11 +54,7 @@ export async function getMembershipPlans() {
 }
 
 async function getContentVersion() {
-  const { data, error } = await supabase
-    .from('content_version')
-    .select('version')
-    .eq('id', 1)
-    .single();
+  const { data, error } = await bilt.from('content_version').select('version').eq('id', 1).single();
   if (error) throw error;
   return data.version;
 }

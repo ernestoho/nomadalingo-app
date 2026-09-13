@@ -1,4 +1,4 @@
-import type { Session, User } from '@supabase/supabase-js';
+import type { Session, User } from '@biltme/backend';
 import {
   createContext,
   type PropsWithChildren,
@@ -8,7 +8,7 @@ import {
   useState,
 } from 'react';
 
-import { supabase } from '@/lib/supabase';
+import { bilt } from '@/lib/backend';
 
 type AuthContextValue = {
   isLoading: boolean;
@@ -25,14 +25,14 @@ export function AuthProvider({ children }: PropsWithChildren) {
   useEffect(() => {
     let isMounted = true;
 
-    void supabase.auth.getSession().then(({ data, error }) => {
+    void bilt.auth.getSession().then(({ data, error }) => {
       if (!isMounted) return;
       if (error) console.warn('Unable to restore the signed-in session.');
       setSession(data.session);
       setIsLoading(false);
     });
 
-    const { data } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+    const { data } = bilt.auth.onAuthStateChange((_event, nextSession) => {
       if (!isMounted) return;
       setSession(nextSession);
       setIsLoading(false);
