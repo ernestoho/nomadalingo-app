@@ -22,6 +22,8 @@ import {
   Stack,
 } from 'expo-router';
 
+import { AuthProvider } from '@/lib/auth';
+import { DataProvider } from '@/lib/data-provider';
 import { initPostHog } from '@/lib/posthog';
 import { registerServiceWorker } from '@/lib/registerServiceWorker';
 import { reportErrorToParent } from '@/lib/reportPreviewError';
@@ -140,12 +142,16 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <HeroUINativeProvider>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ title: 'Habits', headerShown: false }} />
-        </Stack>
-        <InstallPrompt />
-      </HeroUINativeProvider>
+      <DataProvider>
+        <AuthProvider>
+          <HeroUINativeProvider>
+            <Stack>
+              <Stack.Screen name="(tabs)" options={{ title: 'Habits', headerShown: false }} />
+            </Stack>
+            <InstallPrompt />
+          </HeroUINativeProvider>
+        </AuthProvider>
+      </DataProvider>
     </GestureHandlerRootView>
   );
 }
