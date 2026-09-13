@@ -12,7 +12,6 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     ...config,
     name: 'NomadaLingo',
     slug: 'nomadalingo',
-    newArchEnabled: true,
     version: process.env.BILT_APP_VERSION ?? '1.0.0',
     orientation: 'portrait',
     userInterfaceStyle: 'automatic',
@@ -41,7 +40,13 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     extra: {
       appStoreAppId: process.env.BILT_APP_STORE_APP_ID,
     },
-    plugins: ['expo-router', 'expo-font', ...nativePlugins],
+    plugins: [
+      'expo-router',
+      'expo-splash-screen',
+      'expo-status-bar',
+      'expo-font',
+      ...nativePlugins,
+    ],
     experiments: {
       typedRoutes: true,
       reactCompiler: true,
