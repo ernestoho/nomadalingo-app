@@ -105,10 +105,10 @@ export function useConversations(userId?: string) {
   });
 }
 
-export function useMessages(conversationId?: string) {
+export function useMessages(userId?: string, conversationId?: string) {
   return useQuery({
-    queryKey: ['messages', conversationId],
-    enabled: Boolean(conversationId),
+    queryKey: ['messages', userId, conversationId],
+    enabled: Boolean(userId && conversationId),
     refetchInterval: 4_000,
     queryFn: async () => {
       const { data, error } = await bilt

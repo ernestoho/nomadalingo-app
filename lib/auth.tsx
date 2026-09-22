@@ -1,10 +1,13 @@
 import type { Session, User } from '@biltme/backend';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   createContext,
   type PropsWithChildren,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 
@@ -19,8 +22,31 @@ type AuthContextValue = {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: PropsWithChildren) {
+  const queryClient = useQueryClient();
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const currentUserId = useRef<string | null>(null);
+  const transitionId = useRef(0);
+
+  const applySession = useCallback(
+    async (nextSession: Session | null) => {
+      const nextUserId = nextSession?.user.id ?? null;
+
+      if (currentUserId.current !== nextUserId) {
+        const activeTransition = ++transitionId.current;
+        setIsLoading(true);
+        setSession(null);
+        await queryClient.cancelQueries();
+        queryClient.clear();
+        if (transitionId.current !== activeTransition) return;
+      }
+
+      currentUserId.current = nextUserId;
+      setSession(nextSession);
+      setIsLoading(false);
+    },
+    [queryClient],
+  );
 
   useEffect(() => {
     let isMounted = true;
@@ -28,21 +54,19 @@ export function AuthProvider({ children }: PropsWithChildren) {
     void bilt.auth.getSession().then(({ data, error }) => {
       if (!isMounted) return;
       if (error) console.warn('Unable to restore the signed-in session.');
-      setSession(data.session);
-      setIsLoading(false);
+      void applySession(data.session);
     });
 
     const { data } = bilt.auth.onAuthStateChange((_event, nextSession) => {
       if (!isMounted) return;
-      setSession(nextSession);
-      setIsLoading(false);
+      void applySession(nextSession);
     });
 
     return () => {
       isMounted = false;
       data.subscription.unsubscribe();
     };
-  }, []);
+  }, [applySession]);
 
   const value = useMemo<AuthContextValue>(
     () => ({ isLoading, session, user: session?.user ?? null }),

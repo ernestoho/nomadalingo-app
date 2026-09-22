@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { Button, Input, Typography } from 'heroui-native';
 import { randomUUID } from 'expo-crypto';
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { Redirect, Stack, useLocalSearchParams } from 'expo-router';
 
 import { useAuth } from '@/lib/auth';
 import { useMessages, useMvpActions } from '@/lib/data/mvp';
@@ -10,17 +10,12 @@ import { useI18n } from '@/lib/i18n';
 
 export default function ChatScreen() {
   const { id = '' } = useLocalSearchParams<{ id?: string }>();
-  const { user } = useAuth();
+  const { isLoading, user } = useAuth();
   const { language } = useI18n();
-  const { data: messages = [], refetch } = useMessages(id);
+  const { data: messages = [] } = useMessages(user?.id, id);
   const { sendMessage } = useMvpActions();
   const [body, setBody] = useState('');
   const scrollRef = useRef<ScrollView>(null);
-
-  useEffect(() => {
-    const timer = setInterval(() => void refetch(), 5000);
-    return () => clearInterval(timer);
-  }, [refetch]);
 
   const send = async () => {
     const text = body.trim();
@@ -37,6 +32,9 @@ export default function ChatScreen() {
       setBody(text);
     }
   };
+
+  if (isLoading) return null;
+  if (!user) return <Redirect href="/(auth)" />;
 
   return (
     <KeyboardAvoidingView
