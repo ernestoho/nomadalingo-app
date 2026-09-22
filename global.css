@@ -17,6 +17,7 @@
       --muted: oklch(0.55 0.035 55);
       --default: oklch(0.93 0.024 80);
       --default-foreground: oklch(0.28 0.035 48);
+      --color-default-hover: #e9e3d7;
       --accent: oklch(0.62 0.17 153);
       --accent-foreground: oklch(0.99 0 0);
       --success: oklch(0.62 0.17 153);
@@ -40,6 +41,7 @@
       --muted: oklch(0.72 0.025 70);
       --default: oklch(0.3 0.03 48);
       --default-foreground: oklch(0.96 0.015 80);
+      --color-default-hover: #443c38;
       --accent: oklch(0.7 0.16 153);
       --accent-foreground: oklch(0.16 0.03 48);
       --success: oklch(0.7 0.16 153);
