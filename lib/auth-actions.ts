@@ -22,9 +22,10 @@ export async function signOut() {
 
 export async function deleteAccount() {
   const { data, error } = await bilt.functions.invoke<{ deleted: boolean }>('delete-account', {
-    method: 'POST',
+    body: {},
   });
   if (error) throw error;
   if (!data?.deleted) throw new Error('No se pudo eliminar la cuenta. Inténtalo de nuevo.');
-  await bilt.auth.signOut({ scope: 'local' });
+  const { error: signOutError } = await bilt.auth.signOut({ scope: 'local' });
+  if (signOutError) throw new Error(signOutError.message);
 }

@@ -31,6 +31,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     },
     assetBundlePatterns: ['**/*'],
     ios: {
+      usesAppleSignIn: true,
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
       },
@@ -69,6 +70,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       'expo-status-bar',
       'expo-font',
       'expo-secure-store',
+      'expo-web-browser',
+      'expo-apple-authentication',
       ...nativePlugins,
     ],
     experiments: {

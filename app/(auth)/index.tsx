@@ -17,9 +17,11 @@ import { LanguageToggle } from '@/components/LanguageToggle';
 import { NomadaLingoWordmark } from '@/components/NomadaLingoLogo';
 import { BRAND_COLORS, BRAND_FONTS } from '@/lib/brand';
 import { requestEmailCode } from '@/lib/auth-actions';
+import { signInWithApple, signInWithGoogle } from '@/lib/social-auth';
 import { useI18n } from '@/lib/i18n';
 
 type EntryMode = 'signup' | 'signin' | null;
+type SocialProvider = 'apple' | 'google';
 
 const COPY = {
   es: {
@@ -38,6 +40,9 @@ const COPY = {
     emailPlaceholder: 'tu@correo.com',
     send: 'Continuar',
     sending: 'Enviando…',
+    google: 'Continuar con Google',
+    apple: 'Continuar con Apple',
+    connecting: 'Conectando…',
     back: 'Volver',
   },
   en: {
@@ -56,6 +61,9 @@ const COPY = {
     emailPlaceholder: 'you@email.com',
     send: 'Continue',
     sending: 'Sending…',
+    google: 'Continue with Google',
+    apple: 'Continue with Apple',
+    connecting: 'Connecting…',
     back: 'Back',
   },
 } as const;
@@ -67,6 +75,7 @@ export default function SignInScreen() {
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [socialProvider, setSocialProvider] = useState<SocialProvider | null>(null);
 
   const submit = async () => {
     setError('');
@@ -80,6 +89,19 @@ export default function SignInScreen() {
     }
 
     router.push({ pathname: '/(auth)/verify', params: { email: email.trim() } });
+  };
+
+  const submitSocial = async (provider: SocialProvider) => {
+    setError('');
+    setSocialProvider(provider);
+    try {
+      const completed = provider === 'apple' ? await signInWithApple() : await signInWithGoogle();
+      if (completed) router.replace('/');
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'No se pudo iniciar sesión.');
+    } finally {
+      setSocialProvider(null);
+    }
   };
 
   return (
@@ -185,10 +207,36 @@ export default function SignInScreen() {
                 <Button
                   className="h-14 rounded-2xl border border-white/40 bg-white/5"
                   variant="outline"
+                  isDisabled={Boolean(socialProvider)}
                   onPress={() => setMode('signin')}
                 >
                   <Button.Label style={styles.secondaryButtonLabel}>{copy.signIn}</Button.Label>
                 </Button>
+                {Platform.OS !== 'web' ? (
+                  <Button
+                    className="h-14 rounded-2xl border border-white/40 bg-white/5"
+                    variant="outline"
+                    isDisabled={Boolean(socialProvider)}
+                    onPress={() => void submitSocial('google')}
+                  >
+                    <Button.Label style={styles.secondaryButtonLabel}>
+                      {socialProvider === 'google' ? copy.connecting : copy.google}
+                    </Button.Label>
+                  </Button>
+                ) : null}
+                {Platform.OS === 'ios' ? (
+                  <Button
+                    className="h-14 rounded-2xl border border-white/40 bg-white/5"
+                    variant="outline"
+                    isDisabled={Boolean(socialProvider)}
+                    onPress={() => void submitSocial('apple')}
+                  >
+                    <Button.Label style={styles.secondaryButtonLabel}>
+                      {socialProvider === 'apple' ? copy.connecting : copy.apple}
+                    </Button.Label>
+                  </Button>
+                ) : null}
+                {error ? <FieldError>{error}</FieldError> : null}
               </View>
             )}
           </View>

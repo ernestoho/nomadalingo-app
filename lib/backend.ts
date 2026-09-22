@@ -10,6 +10,7 @@ export const bilt = createClient(
       persistSession: true,
       autoRefreshToken: true,
       detectSessionInUrl: false,
+      flowType: 'pkce',
     },
   },
 );

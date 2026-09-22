@@ -1,5 +1,7 @@
 import type { Session, User } from '@biltme/backend';
 import { useQueryClient } from '@tanstack/react-query';
+import type { AppStateStatus } from 'react-native';
+import { AppState, Platform } from 'react-native';
 import {
   createContext,
   type PropsWithChildren,
@@ -50,16 +52,18 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   useEffect(() => {
     let isMounted = true;
-
-    void bilt.auth.getSession().then(({ data, error }) => {
-      if (!isMounted) return;
-      if (error) console.warn('Unable to restore the signed-in session.');
-      void applySession(data.session);
-    });
+    let receivedAuthEvent = false;
 
     const { data } = bilt.auth.onAuthStateChange((_event, nextSession) => {
       if (!isMounted) return;
+      receivedAuthEvent = true;
       void applySession(nextSession);
+    });
+
+    void bilt.auth.getSession().then(({ data: sessionData, error }) => {
+      if (!isMounted || receivedAuthEvent) return;
+      if (error) console.warn('Unable to restore the signed-in session.');
+      void applySession(sessionData.session);
     });
 
     return () => {
@@ -67,6 +71,22 @@ export function AuthProvider({ children }: PropsWithChildren) {
       data.subscription.unsubscribe();
     };
   }, [applySession]);
+
+  useEffect(() => {
+    if (Platform.OS === 'web') return undefined;
+
+    const updateRefreshState = (state: AppStateStatus) => {
+      if (state === 'active') void bilt.auth.startAutoRefresh();
+      else void bilt.auth.stopAutoRefresh();
+    };
+
+    updateRefreshState(AppState.currentState);
+    const subscription = AppState.addEventListener('change', updateRefreshState);
+    return () => {
+      subscription.remove();
+      void bilt.auth.stopAutoRefresh();
+    };
+  }, []);
 
   const value = useMemo<AuthContextValue>(
     () => ({ isLoading, session, user: session?.user ?? null }),

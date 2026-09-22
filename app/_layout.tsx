@@ -23,6 +23,7 @@ import {
   Stack,
 } from 'expo-router';
 
+import { AuthRouteGuard } from '@/components/AuthRouteGuard';
 import { AuthProvider } from '@/lib/auth';
 import { DataProvider } from '@/lib/data-provider';
 import { I18nProvider } from '@/lib/i18n';
@@ -145,15 +146,18 @@ export default function RootLayout() {
         <AuthProvider>
           <I18nProvider>
             <HeroUINativeProvider>
-              <Stack screenOptions={{ headerShown: false }}>
-                <Stack.Screen name="index" />
-                <Stack.Screen name="(auth)" />
-                <Stack.Screen name="(tabs)" />
-                <Stack.Screen name="event/[id]" />
-                <Stack.Screen name="person/[id]" />
-                <Stack.Screen name="chat/[id]" />
-                <Stack.Screen name="settings" />
-              </Stack>
+              <AuthRouteGuard>
+                <Stack screenOptions={{ headerShown: false }}>
+                  <Stack.Screen name="index" />
+                  <Stack.Screen name="(auth)" />
+                  <Stack.Screen name="(tabs)" />
+                  <Stack.Screen name="auth/callback" />
+                  <Stack.Screen name="event/[id]" />
+                  <Stack.Screen name="person/[id]" />
+                  <Stack.Screen name="chat/[id]" />
+                  <Stack.Screen name="settings" />
+                </Stack>
+              </AuthRouteGuard>
               <InstallPrompt />
             </HeroUINativeProvider>
           </I18nProvider>

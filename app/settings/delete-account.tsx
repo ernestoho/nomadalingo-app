@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { ScrollView } from 'react-native';
+import { Alert, Platform, ScrollView } from 'react-native';
 import { Button, FieldError, Typography } from 'heroui-native';
 import { router, Stack } from 'expo-router';
 
-import { bilt } from '@/lib/backend';
+import { deleteAccount } from '@/lib/auth-actions';
 import { useI18n } from '@/lib/i18n';
 
 export default function DeleteAccountScreen() {
@@ -13,14 +13,36 @@ export default function DeleteAccountScreen() {
   const remove = async () => {
     setPending(true);
     setError('');
-    const { error: fnError } = await bilt.functions.invoke('delete-account', { body: {} });
-    if (fnError) {
-      setError(fnError.message);
+    try {
+      await deleteAccount();
+      router.replace('/(auth)');
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'No se pudo eliminar la cuenta.');
+    } finally {
       setPending(false);
+    }
+  };
+
+  const confirmRemove = () => {
+    const title = language === 'es' ? '¿Eliminar tu cuenta?' : 'Delete your account?';
+    const message =
+      language === 'es'
+        ? 'Esta acción es permanente y no se puede deshacer.'
+        : 'This action is permanent and cannot be undone.';
+
+    if (Platform.OS === 'web') {
+      if (window.confirm(`${title}\n\n${message}`)) void remove();
       return;
     }
-    await bilt.auth.signOut();
-    router.replace('/(auth)');
+
+    Alert.alert(title, message, [
+      { text: language === 'es' ? 'Cancelar' : 'Cancel', style: 'cancel' },
+      {
+        text: language === 'es' ? 'Eliminar' : 'Delete',
+        style: 'destructive',
+        onPress: () => void remove(),
+      },
+    ]);
   };
   return (
     <ScrollView className="bg-background flex-1" contentContainerClassName="gap-5 p-safe-offset-5">
@@ -39,7 +61,7 @@ export default function DeleteAccountScreen() {
           : 'This permanently deletes your profile, RSVPs, conversations, and messages. It cannot be undone.'}
       </Typography.Paragraph>
       {error ? <FieldError>{error}</FieldError> : null}
-      <Button className="bg-danger" isDisabled={pending} onPress={() => void remove()}>
+      <Button className="bg-danger" isDisabled={pending} onPress={confirmRemove}>
         <Button.Label>
           {pending ? '…' : language === 'es' ? 'Eliminar permanentemente' : 'Delete permanently'}
         </Button.Label>
