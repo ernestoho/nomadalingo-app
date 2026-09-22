@@ -1,12 +1,33 @@
-import { ScrollView } from 'react-native';
+import { Alert, ScrollView } from 'react-native';
 import { Button, Separator, Typography } from 'heroui-native';
 import { router, Stack } from 'expo-router';
+import { useState } from 'react';
 
 import { signOut } from '@/lib/auth-actions';
 import { useI18n } from '@/lib/i18n';
 
 export default function SettingsScreen() {
   const { language, setLanguage } = useI18n();
+  const [isSigningOut, setIsSigningOut] = useState(false);
+
+  const handleSignOut = async () => {
+    if (isSigningOut) return;
+
+    setIsSigningOut(true);
+    const { error } = await signOut();
+
+    if (error) {
+      setIsSigningOut(false);
+      Alert.alert(
+        language === 'es' ? 'No se pudo cerrar sesión' : 'Unable to sign out',
+        error.message,
+      );
+      return;
+    }
+
+    router.replace('/(auth)');
+  };
+
   return (
     <ScrollView className="bg-background flex-1" contentContainerClassName="gap-3 p-safe-offset-5">
       <Stack.Screen
@@ -31,8 +52,16 @@ export default function SettingsScreen() {
         </Button.Label>
       </Button>
       <Separator />
-      <Button variant="secondary" onPress={() => void signOut()}>
-        <Button.Label>{language === 'es' ? 'Cerrar sesión' : 'Sign out'}</Button.Label>
+      <Button variant="secondary" isDisabled={isSigningOut} onPress={() => void handleSignOut()}>
+        <Button.Label>
+          {isSigningOut
+            ? language === 'es'
+              ? 'Cerrando sesión…'
+              : 'Signing out…'
+            : language === 'es'
+              ? 'Cerrar sesión'
+              : 'Sign out'}
+        </Button.Label>
       </Button>
       <Button
         variant="ghost"
