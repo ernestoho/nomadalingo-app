@@ -1,5 +1,7 @@
+import { StyleSheet } from 'react-native';
 import { Button } from 'heroui-native';
 
+import { BRAND_COLORS, BRAND_FONTS } from '@/lib/brand';
 import { useI18n } from '@/lib/i18n';
 
 export function LanguageToggle({ onDark = false }: { onDark?: boolean }) {
@@ -15,9 +17,19 @@ export function LanguageToggle({ onDark = false }: { onDark?: boolean }) {
         language === 'es' ? 'Cambiar idioma a inglés' : 'Switch language to Spanish'
       }
     >
-      <Button.Label className={onDark ? 'text-xs font-bold text-white' : undefined}>
+      <Button.Label style={[styles.label, onDark && styles.labelOnDark]}>
         {language === 'es' ? 'ES / EN' : 'EN / ES'}
       </Button.Label>
     </Button>
   );
 }
+
+const styles = StyleSheet.create({
+  label: {
+    fontFamily: BRAND_FONTS.bold,
+    fontSize: 12,
+  },
+  labelOnDark: {
+    color: BRAND_COLORS.onDark,
+  },
+});

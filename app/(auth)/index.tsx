@@ -1,5 +1,12 @@
 import { useState } from 'react';
-import { ImageBackground, KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
+import {
+  ImageBackground,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native';
 import { router } from 'expo-router';
 import { Button, FieldError, Input, Label, TextField, Typography } from 'heroui-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -7,6 +14,8 @@ import { StatusBar } from 'expo-status-bar';
 
 import welcomeBackground from '@/assets/images/auth-beach.png';
 import { LanguageToggle } from '@/components/LanguageToggle';
+import { NomadaLingoWordmark } from '@/components/NomadaLingoLogo';
+import { BRAND_COLORS, BRAND_FONTS } from '@/lib/brand';
 import { requestEmailCode } from '@/lib/auth-actions';
 import { useI18n } from '@/lib/i18n';
 
@@ -83,7 +92,7 @@ export default function SignInScreen() {
       <StatusBar {...{ style: 'light' }} />
       <LinearGradient
         pointerEvents="none"
-        colors={['rgba(5,15,24,0.12)', 'rgba(5,15,24,0.05)', 'rgba(5,15,24,0.94)']}
+        colors={[BRAND_COLORS.overlayTop, BRAND_COLORS.overlayMiddle, BRAND_COLORS.overlayBottom]}
         locations={[0, 0.42, 1]}
         className="absolute inset-0"
       />
@@ -96,27 +105,27 @@ export default function SignInScreen() {
           keyboardShouldPersistTaps="handled"
           bounces={false}
         >
-          <View className="flex-row items-center justify-between">
-            <Typography.Heading
-              className="text-3xl font-extrabold tracking-tight text-white"
-              type="h2"
-            >
-              NómadaLingo
-            </Typography.Heading>
+          <View className="flex-row items-center justify-between gap-4">
+            <NomadaLingoWordmark
+              size={30}
+              tint={BRAND_COLORS.onDark}
+              pinFill={BRAND_COLORS.tealLight}
+              pinEye={BRAND_COLORS.ink}
+              style={styles.wordmark}
+            />
             <LanguageToggle onDark />
           </View>
 
           <View className="gap-7 pt-32">
             <View className="gap-3">
               <Typography.Heading
-                className="web:text-4xl max-w-xl text-3xl leading-tight font-extrabold tracking-tight text-white"
+                className="web:text-4xl max-w-xl text-3xl leading-tight text-white"
+                style={styles.hero}
                 type="h1"
               >
                 {copy.headline}
               </Typography.Heading>
-              <Typography className="text-base font-semibold text-amber-200">
-                {copy.tagline}
-              </Typography>
+              <Typography style={styles.tagline}>{copy.tagline}</Typography>
             </View>
 
             <View className="flex-row items-start gap-5 pl-4">
@@ -124,20 +133,22 @@ export default function SignInScreen() {
                 <View key={label} className="flex-row items-center gap-5">
                   {index > 0 ? <View className="size-1 rounded-full bg-white/40" /> : null}
                   <View className="items-center">
-                    <Typography className="text-xl font-extrabold text-white">{value}</Typography>
-                    <Typography className="text-xs font-semibold text-white/70">{label}</Typography>
+                    <Typography style={styles.statValue}>{value}</Typography>
+                    <Typography style={styles.statLabel}>{label}</Typography>
                   </View>
                 </View>
               ))}
             </View>
 
             {mode ? (
-              <View className="gap-4 rounded-3xl border border-white/20 bg-slate-950/75 p-5">
-                <Typography.Heading className="text-xl font-bold text-white" type="h3">
+              <View className="gap-4 rounded-3xl border p-5" style={styles.formPanel}>
+                <Typography.Heading style={styles.formTitle} type="h3">
                   {mode === 'signup' ? copy.signupTitle : copy.signinTitle}
                 </Typography.Heading>
                 <TextField>
-                  <Label className="text-white/80">{copy.email}</Label>
+                  <Label>
+                    <Label.Text style={styles.fieldLabel}>{copy.email}</Label.Text>
+                  </Label>
                   <Input
                     autoCapitalize="none"
                     autoComplete="email"
@@ -149,33 +160,34 @@ export default function SignInScreen() {
                 </TextField>
                 {error ? <FieldError>{error}</FieldError> : null}
                 <Button
-                  className="h-14 bg-teal-500"
+                  className="h-14"
+                  style={styles.primaryButton}
                   isDisabled={isSubmitting || !email.trim()}
                   onPress={() => void submit()}
                 >
-                  <Button.Label className="font-bold text-white">
+                  <Button.Label style={styles.primaryButtonLabel}>
                     {isSubmitting ? copy.sending : copy.send}
                   </Button.Label>
                 </Button>
                 <Button variant="ghost" onPress={() => setMode(null)}>
-                  <Button.Label className="font-semibold text-white">{copy.back}</Button.Label>
+                  <Button.Label style={styles.ghostButtonLabel}>{copy.back}</Button.Label>
                 </Button>
               </View>
             ) : (
               <View className="gap-3">
-                <Button className="h-14 rounded-2xl bg-teal-500" onPress={() => setMode('signup')}>
-                  <Button.Label className="text-base font-bold text-white">
-                    {copy.create}
-                  </Button.Label>
+                <Button
+                  className="h-14 rounded-2xl"
+                  style={styles.primaryButton}
+                  onPress={() => setMode('signup')}
+                >
+                  <Button.Label style={styles.primaryButtonLabel}>{copy.create}</Button.Label>
                 </Button>
                 <Button
                   className="h-14 rounded-2xl border border-white/40 bg-white/5"
                   variant="outline"
                   onPress={() => setMode('signin')}
                 >
-                  <Button.Label className="text-base font-bold text-white">
-                    {copy.signIn}
-                  </Button.Label>
+                  <Button.Label style={styles.secondaryButtonLabel}>{copy.signIn}</Button.Label>
                 </Button>
               </View>
             )}
@@ -185,3 +197,64 @@ export default function SignInScreen() {
     </ImageBackground>
   );
 }
+
+const styles = StyleSheet.create({
+  wordmark: {
+    flexShrink: 1,
+  },
+  hero: {
+    fontFamily: BRAND_FONTS.display,
+    color: BRAND_COLORS.onDark,
+    letterSpacing: -1,
+  },
+  tagline: {
+    fontFamily: BRAND_FONTS.bold,
+    fontSize: 16,
+    lineHeight: 22,
+    color: BRAND_COLORS.gold,
+  },
+  statValue: {
+    fontFamily: BRAND_FONTS.heavy,
+    fontSize: 20,
+    lineHeight: 25,
+    color: BRAND_COLORS.onDark,
+    fontVariant: ['tabular-nums'],
+  },
+  statLabel: {
+    fontFamily: BRAND_FONTS.medium,
+    fontSize: 12,
+    lineHeight: 17,
+    color: BRAND_COLORS.onDarkMuted,
+  },
+  formPanel: {
+    backgroundColor: BRAND_COLORS.panel,
+    borderColor: BRAND_COLORS.panelBorder,
+  },
+  formTitle: {
+    fontFamily: BRAND_FONTS.display,
+    fontSize: 21,
+    lineHeight: 25,
+    color: BRAND_COLORS.onDark,
+  },
+  fieldLabel: {
+    fontFamily: BRAND_FONTS.medium,
+    color: BRAND_COLORS.onDarkMuted,
+  },
+  primaryButton: {
+    backgroundColor: BRAND_COLORS.tealDarker,
+  },
+  primaryButtonLabel: {
+    fontFamily: BRAND_FONTS.bold,
+    fontSize: 16,
+    color: BRAND_COLORS.onDark,
+  },
+  secondaryButtonLabel: {
+    fontFamily: BRAND_FONTS.bold,
+    fontSize: 16,
+    color: BRAND_COLORS.onDark,
+  },
+  ghostButtonLabel: {
+    fontFamily: BRAND_FONTS.medium,
+    color: BRAND_COLORS.onDark,
+  },
+});

@@ -2,13 +2,14 @@
 import '../global.css';
 
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { BricolageGrotesque_700Bold } from '@expo-google-fonts/bricolage-grotesque';
 import {
-  Inter_400Regular,
-  Inter_500Medium,
-  Inter_600SemiBold,
-  Inter_700Bold,
+  PlusJakartaSans_400Regular,
+  PlusJakartaSans_600SemiBold,
+  PlusJakartaSans_700Bold,
+  PlusJakartaSans_800ExtraBold,
   useFonts,
-} from '@expo-google-fonts/inter';
+} from '@expo-google-fonts/plus-jakarta-sans';
 import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { Platform } from 'react-native';
 import { useEffect } from 'react';
@@ -53,10 +54,11 @@ void SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
-    Inter_400Regular,
-    Inter_500Medium,
-    Inter_600SemiBold,
-    Inter_700Bold,
+    BricolageGrotesque_700Bold,
+    PlusJakartaSans_400Regular,
+    PlusJakartaSans_600SemiBold,
+    PlusJakartaSans_700Bold,
+    PlusJakartaSans_800ExtraBold,
   });
 
   // Report uncaught JS errors and unhandled promise rejections to parent (Bilt preview iframe)
@@ -89,23 +91,19 @@ export default function RootLayout() {
     if (Platform.OS === 'web') {
       // Check if link already exists
       const existingLink = document.querySelector(
-        'link[href*="fonts.googleapis.com/css2?family=Inter"]',
+        'link[href*="fonts.googleapis.com/css2?family=Bricolage"]',
       );
 
       if (!existingLink) {
         const link = document.createElement('link');
         link.rel = 'stylesheet';
         link.href =
-          'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap';
+          'https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap';
         link.crossOrigin = 'anonymous';
         document.head.appendChild(link);
       }
 
-      // Note: The @import in global.css and the link tag above ensure Inter font loads
-      // expo-font will register the font family names (Inter_400Regular, etc.)
-      // If expo-font fails due to proxy issues, the fonts should still be available
-      // via the direct Google Fonts CDN link, though the specific font family names
-      // might not be registered. The app should still render with Inter font.
+      // The stylesheet link mirrors the bundled NómadaLingo font families on web.
     }
   }, []);
 
