@@ -40,54 +40,42 @@ declare module '@biltme/backend' {
             },
           ];
         };
-        content_version: {
+        chat_requests: {
           Row: {
-            id: number;
-            version: number;
-            updated_at: string;
+            id: string;
+            sender_id: string;
+            recipient_id: string;
+            status: Database['public']['Enums']['chat_request_status'];
+            created_at: string;
+            resolved_at: string | null;
           };
           Insert: {
-            id?: number;
-            version?: number;
-            updated_at?: string;
+            id?: string;
+            sender_id: string;
+            recipient_id: string;
+            status?: Database['public']['Enums']['chat_request_status'];
+            created_at?: string;
+            resolved_at?: string | null;
           };
           Update: {
-            id?: number;
-            version?: number;
-            updated_at?: string;
-          };
-          Relationships: [];
-        };
-        conversation_members: {
-          Row: {
-            conversation_id: string;
-            user_id: string;
-            joined_at: string;
-            last_read_at: string | null;
-          };
-          Insert: {
-            conversation_id: string;
-            user_id: string;
-            joined_at?: string;
-            last_read_at?: string | null;
-          };
-          Update: {
-            conversation_id?: string;
-            user_id?: string;
-            joined_at?: string;
-            last_read_at?: string | null;
+            id?: string;
+            sender_id?: string;
+            recipient_id?: string;
+            status?: Database['public']['Enums']['chat_request_status'];
+            created_at?: string;
+            resolved_at?: string | null;
           };
           Relationships: [
             {
-              foreignKeyName: 'conversation_members_conversation_id_fkey';
-              columns: ['conversation_id'];
+              foreignKeyName: 'chat_requests_recipient_id_fkey';
+              columns: ['recipient_id'];
               isOneToOne: false;
-              referencedRelation: 'conversations';
+              referencedRelation: 'profiles';
               referencedColumns: ['id'];
             },
             {
-              foreignKeyName: 'conversation_members_user_id_fkey';
-              columns: ['user_id'];
+              foreignKeyName: 'chat_requests_sender_id_fkey';
+              columns: ['sender_id'];
               isOneToOne: false;
               referencedRelation: 'profiles';
               referencedColumns: ['id'];
@@ -97,183 +85,142 @@ declare module '@biltme/backend' {
         conversations: {
           Row: {
             id: string;
-            kind: 'direct' | 'group';
-            direct_key: string | null;
-            title: string | null;
-            created_by: string;
+            participant_low_id: string;
+            participant_high_id: string;
+            accepted_request_id: string;
+            last_message_at: string | null;
             created_at: string;
-            updated_at: string;
           };
           Insert: {
             id?: string;
-            kind?: 'direct' | 'group';
-            direct_key?: string | null;
-            title?: string | null;
-            created_by: string;
+            participant_low_id: string;
+            participant_high_id: string;
+            accepted_request_id: string;
+            last_message_at?: string | null;
             created_at?: string;
-            updated_at?: string;
           };
           Update: {
             id?: string;
-            kind?: 'direct' | 'group';
-            direct_key?: string | null;
-            title?: string | null;
-            created_by?: string;
+            participant_low_id?: string;
+            participant_high_id?: string;
+            accepted_request_id?: string;
+            last_message_at?: string | null;
             created_at?: string;
-            updated_at?: string;
           };
           Relationships: [
             {
-              foreignKeyName: 'conversations_created_by_fkey';
-              columns: ['created_by'];
+              foreignKeyName: 'conversations_accepted_request_id_fkey';
+              columns: ['accepted_request_id'];
+              isOneToOne: false;
+              referencedRelation: 'chat_requests';
+              referencedColumns: ['id'];
+            },
+            {
+              foreignKeyName: 'conversations_participant_high_id_fkey';
+              columns: ['participant_high_id'];
+              isOneToOne: false;
+              referencedRelation: 'profiles';
+              referencedColumns: ['id'];
+            },
+            {
+              foreignKeyName: 'conversations_participant_low_id_fkey';
+              columns: ['participant_low_id'];
               isOneToOne: false;
               referencedRelation: 'profiles';
               referencedColumns: ['id'];
             },
           ];
         };
-        meetups: {
+        event_rsvps: {
           Row: {
-            id: string;
-            category: string;
-            title: Json;
-            venue_id: string;
-            area: string;
-            when_label: Json;
-            starts_at: string;
-            going: number;
-            capacity: number;
-            languages: Json;
-            attendees: Json;
-            description: Json;
-            host_id: number | null;
-            created_by: string | null;
-            published: boolean;
+            event_id: string;
+            user_id: string;
             created_at: string;
-            updated_at: string;
           };
           Insert: {
-            id: string;
-            category: string;
-            title: Json;
-            venue_id: string;
-            area: string;
-            when_label: Json;
-            starts_at: string;
-            going?: number;
-            capacity?: number;
-            languages?: Json;
-            attendees?: Json;
-            description?: Json;
-            host_id?: number | null;
-            created_by?: string | null;
-            published?: boolean;
-            created_at?: string;
-            updated_at?: string;
-          };
-          Update: {
-            id?: string;
-            category?: string;
-            title?: Json;
-            venue_id?: string;
-            area?: string;
-            when_label?: Json;
-            starts_at?: string;
-            going?: number;
-            capacity?: number;
-            languages?: Json;
-            attendees?: Json;
-            description?: Json;
-            host_id?: number | null;
-            created_by?: string | null;
-            published?: boolean;
-            created_at?: string;
-            updated_at?: string;
-          };
-          Relationships: [
-            {
-              foreignKeyName: 'meetups_created_by_fkey';
-              columns: ['created_by'];
-              isOneToOne: false;
-              referencedRelation: 'profiles';
-              referencedColumns: ['id'];
-            },
-            {
-              foreignKeyName: 'meetups_venue_id_fkey';
-              columns: ['venue_id'];
-              isOneToOne: false;
-              referencedRelation: 'venues';
-              referencedColumns: ['id'];
-            },
-          ];
-        };
-        membership_plans: {
-          Row: {
-            id: string;
-            label: Json;
-            price_usd: number;
-            days: number;
-            note: Json | null;
-            active: boolean;
-            sort_order: number;
-            updated_at: string;
-          };
-          Insert: {
-            id: string;
-            label: Json;
-            price_usd: number;
-            days: number;
-            note?: Json | null;
-            active?: boolean;
-            sort_order?: number;
-            updated_at?: string;
-          };
-          Update: {
-            id?: string;
-            label?: Json;
-            price_usd?: number;
-            days?: number;
-            note?: Json | null;
-            active?: boolean;
-            sort_order?: number;
-            updated_at?: string;
-          };
-          Relationships: [];
-        };
-        memberships: {
-          Row: {
+            event_id: string;
             user_id: string;
-            plan: string;
-            started_at: string;
-            until: string;
-            updated_at: string;
-          };
-          Insert: {
-            user_id: string;
-            plan: string;
-            started_at?: string;
-            until: string;
-            updated_at?: string;
+            created_at?: string;
           };
           Update: {
+            event_id?: string;
             user_id?: string;
-            plan?: string;
-            started_at?: string;
-            until?: string;
+            created_at?: string;
+          };
+          Relationships: [
+            {
+              foreignKeyName: 'event_rsvps_event_id_fkey';
+              columns: ['event_id'];
+              isOneToOne: false;
+              referencedRelation: 'events';
+              referencedColumns: ['id'];
+            },
+            {
+              foreignKeyName: 'event_rsvps_user_id_fkey';
+              columns: ['user_id'];
+              isOneToOne: false;
+              referencedRelation: 'profiles';
+              referencedColumns: ['id'];
+            },
+          ];
+        };
+        events: {
+          Row: {
+            id: string;
+            title_es: string;
+            title_en: string;
+            description_es: string;
+            description_en: string;
+            starts_at: string;
+            ends_at: string;
+            location_name: string;
+            area: string;
+            capacity: number;
+            rsvp_count: number;
+            published: boolean;
+            created_by: string | null;
+            created_at: string;
+            updated_at: string;
+          };
+          Insert: {
+            id?: string;
+            title_es: string;
+            title_en: string;
+            description_es?: string;
+            description_en?: string;
+            starts_at: string;
+            ends_at: string;
+            location_name: string;
+            area: string;
+            capacity: number;
+            rsvp_count?: number;
+            published?: boolean;
+            created_by?: string | null;
+            created_at?: string;
+            updated_at?: string;
+          };
+          Update: {
+            id?: string;
+            title_es?: string;
+            title_en?: string;
+            description_es?: string;
+            description_en?: string;
+            starts_at?: string;
+            ends_at?: string;
+            location_name?: string;
+            area?: string;
+            capacity?: number;
+            rsvp_count?: number;
+            published?: boolean;
+            created_by?: string | null;
+            created_at?: string;
             updated_at?: string;
           };
           Relationships: [
             {
-              foreignKeyName: 'memberships_plan_fkey';
-              columns: ['plan'];
+              foreignKeyName: 'events_created_by_fkey';
+              columns: ['created_by'];
               isOneToOne: false;
-              referencedRelation: 'membership_plans';
-              referencedColumns: ['id'];
-            },
-            {
-              foreignKeyName: 'memberships_user_id_fkey';
-              columns: ['user_id'];
-              isOneToOne: true;
               referencedRelation: 'profiles';
               referencedColumns: ['id'];
             },
@@ -286,10 +233,7 @@ declare module '@biltme/backend' {
             sender_id: string;
             client_id: string;
             body: string;
-            correction: Json | null;
-            meetup_id: string | null;
             created_at: string;
-            edited_at: string | null;
             deleted_at: string | null;
           };
           Insert: {
@@ -298,10 +242,7 @@ declare module '@biltme/backend' {
             sender_id: string;
             client_id: string;
             body: string;
-            correction?: Json | null;
-            meetup_id?: string | null;
             created_at?: string;
-            edited_at?: string | null;
             deleted_at?: string | null;
           };
           Update: {
@@ -310,10 +251,7 @@ declare module '@biltme/backend' {
             sender_id?: string;
             client_id?: string;
             body?: string;
-            correction?: Json | null;
-            meetup_id?: string | null;
             created_at?: string;
-            edited_at?: string | null;
             deleted_at?: string | null;
           };
           Relationships: [
@@ -325,159 +263,8 @@ declare module '@biltme/backend' {
               referencedColumns: ['id'];
             },
             {
-              foreignKeyName: 'messages_meetup_id_fkey';
-              columns: ['meetup_id'];
-              isOneToOne: false;
-              referencedRelation: 'meetups';
-              referencedColumns: ['id'];
-            },
-            {
               foreignKeyName: 'messages_sender_id_fkey';
               columns: ['sender_id'];
-              isOneToOne: false;
-              referencedRelation: 'profiles';
-              referencedColumns: ['id'];
-            },
-          ];
-        };
-        official_events: {
-          Row: {
-            id: string;
-            title: Json;
-            venue_id: string;
-            area: string;
-            when_label: Json;
-            starts_at: string;
-            price_usd: number;
-            capacity: number;
-            sold_seed: number;
-            includes: Json;
-            blurb: Json;
-            is_current: boolean;
-            published: boolean;
-            created_at: string;
-            updated_at: string;
-          };
-          Insert: {
-            id: string;
-            title: Json;
-            venue_id: string;
-            area: string;
-            when_label: Json;
-            starts_at: string;
-            price_usd: number;
-            capacity: number;
-            sold_seed?: number;
-            includes?: Json;
-            blurb?: Json;
-            is_current?: boolean;
-            published?: boolean;
-            created_at?: string;
-            updated_at?: string;
-          };
-          Update: {
-            id?: string;
-            title?: Json;
-            venue_id?: string;
-            area?: string;
-            when_label?: Json;
-            starts_at?: string;
-            price_usd?: number;
-            capacity?: number;
-            sold_seed?: number;
-            includes?: Json;
-            blurb?: Json;
-            is_current?: boolean;
-            published?: boolean;
-            created_at?: string;
-            updated_at?: string;
-          };
-          Relationships: [
-            {
-              foreignKeyName: 'official_events_venue_id_fkey';
-              columns: ['venue_id'];
-              isOneToOne: false;
-              referencedRelation: 'venues';
-              referencedColumns: ['id'];
-            },
-          ];
-        };
-        orders: {
-          Row: {
-            id: string;
-            user_id: string;
-            kind: 'ticket' | 'membership';
-            target_id: string;
-            amount_usd: number;
-            status: 'created' | 'approved' | 'captured' | 'cancelled' | 'refunded';
-            provider: string;
-            provider_ref: string | null;
-            created_at: string;
-            captured_at: string | null;
-          };
-          Insert: {
-            id?: string;
-            user_id: string;
-            kind: 'ticket' | 'membership';
-            target_id: string;
-            amount_usd: number;
-            status?: 'created' | 'approved' | 'captured' | 'cancelled' | 'refunded';
-            provider: string;
-            provider_ref?: string | null;
-            created_at?: string;
-            captured_at?: string | null;
-          };
-          Update: {
-            id?: string;
-            user_id?: string;
-            kind?: 'ticket' | 'membership';
-            target_id?: string;
-            amount_usd?: number;
-            status?: 'created' | 'approved' | 'captured' | 'cancelled' | 'refunded';
-            provider?: string;
-            provider_ref?: string | null;
-            created_at?: string;
-            captured_at?: string | null;
-          };
-          Relationships: [
-            {
-              foreignKeyName: 'orders_user_id_fkey';
-              columns: ['user_id'];
-              isOneToOne: false;
-              referencedRelation: 'profiles';
-              referencedColumns: ['id'];
-            },
-          ];
-        };
-        phrases: {
-          Row: {
-            id: string;
-            user_id: string;
-            wrong: string;
-            right_text: string;
-            why: Json;
-            created_at: string;
-          };
-          Insert: {
-            id?: string;
-            user_id: string;
-            wrong: string;
-            right_text: string;
-            why?: Json;
-            created_at?: string;
-          };
-          Update: {
-            id?: string;
-            user_id?: string;
-            wrong?: string;
-            right_text?: string;
-            why?: Json;
-            created_at?: string;
-          };
-          Relationships: [
-            {
-              foreignKeyName: 'phrases_user_id_fkey';
-              columns: ['user_id'];
               isOneToOne: false;
               referencedRelation: 'profiles';
               referencedColumns: ['id'];
@@ -488,32 +275,41 @@ declare module '@biltme/backend' {
           Row: {
             id: string;
             display_name: string;
-            role: 'member' | 'admin';
-            profile: Json;
-            onboarded: boolean;
+            spoken_languages: string[];
+            learning_languages: string[];
+            learning_level: Database['public']['Enums']['language_level'];
+            bio: string;
+            adult_confirmed_at: string | null;
+            onboarding_completed_at: string | null;
+            role: Database['public']['Enums']['profile_role'];
             created_at: string;
             updated_at: string;
-            last_seen_at: string | null;
           };
           Insert: {
             id: string;
             display_name?: string;
-            role?: 'member' | 'admin';
-            profile?: Json;
-            onboarded?: boolean;
+            spoken_languages?: string[];
+            learning_languages?: string[];
+            learning_level?: Database['public']['Enums']['language_level'];
+            bio?: string;
+            adult_confirmed_at?: string | null;
+            onboarding_completed_at?: string | null;
+            role?: Database['public']['Enums']['profile_role'];
             created_at?: string;
             updated_at?: string;
-            last_seen_at?: string | null;
           };
           Update: {
             id?: string;
             display_name?: string;
-            role?: 'member' | 'admin';
-            profile?: Json;
-            onboarded?: boolean;
+            spoken_languages?: string[];
+            learning_languages?: string[];
+            learning_level?: Database['public']['Enums']['language_level'];
+            bio?: string;
+            adult_confirmed_at?: string | null;
+            onboarding_completed_at?: string | null;
+            role?: Database['public']['Enums']['profile_role'];
             created_at?: string;
             updated_at?: string;
-            last_seen_at?: string | null;
           };
           Relationships: [];
         };
@@ -523,54 +319,39 @@ declare module '@biltme/backend' {
             reporter_id: string;
             reported_user_id: string | null;
             message_id: string | null;
-            reason:
-              | 'spam'
-              | 'harassment'
-              | 'hate'
-              | 'sexual'
-              | 'violence'
-              | 'impersonation'
-              | 'other';
-            details: string | null;
-            status: 'open' | 'reviewing' | 'resolved' | 'dismissed';
+            reason: Database['public']['Enums']['report_reason'];
+            details: string;
+            status: Database['public']['Enums']['report_status'];
+            admin_notes: string;
+            reviewed_by: string | null;
+            reviewed_at: string | null;
             created_at: string;
-            resolved_at: string | null;
           };
           Insert: {
             id?: string;
             reporter_id: string;
             reported_user_id?: string | null;
             message_id?: string | null;
-            reason:
-              | 'spam'
-              | 'harassment'
-              | 'hate'
-              | 'sexual'
-              | 'violence'
-              | 'impersonation'
-              | 'other';
-            details?: string | null;
-            status?: 'open' | 'reviewing' | 'resolved' | 'dismissed';
+            reason: Database['public']['Enums']['report_reason'];
+            details?: string;
+            status?: Database['public']['Enums']['report_status'];
+            admin_notes?: string;
+            reviewed_by?: string | null;
+            reviewed_at?: string | null;
             created_at?: string;
-            resolved_at?: string | null;
           };
           Update: {
             id?: string;
             reporter_id?: string;
             reported_user_id?: string | null;
             message_id?: string | null;
-            reason?:
-              | 'spam'
-              | 'harassment'
-              | 'hate'
-              | 'sexual'
-              | 'violence'
-              | 'impersonation'
-              | 'other';
-            details?: string | null;
-            status?: 'open' | 'reviewing' | 'resolved' | 'dismissed';
+            reason?: Database['public']['Enums']['report_reason'];
+            details?: string;
+            status?: Database['public']['Enums']['report_status'];
+            admin_notes?: string;
+            reviewed_by?: string | null;
+            reviewed_at?: string | null;
             created_at?: string;
-            resolved_at?: string | null;
           };
           Relationships: [
             {
@@ -594,144 +375,75 @@ declare module '@biltme/backend' {
               referencedRelation: 'profiles';
               referencedColumns: ['id'];
             },
-          ];
-        };
-        rsvps: {
-          Row: {
-            user_id: string;
-            meetup_id: string;
-            created_at: string;
-          };
-          Insert: {
-            user_id: string;
-            meetup_id: string;
-            created_at?: string;
-          };
-          Update: {
-            user_id?: string;
-            meetup_id?: string;
-            created_at?: string;
-          };
-          Relationships: [
             {
-              foreignKeyName: 'rsvps_meetup_id_fkey';
-              columns: ['meetup_id'];
-              isOneToOne: false;
-              referencedRelation: 'meetups';
-              referencedColumns: ['id'];
-            },
-            {
-              foreignKeyName: 'rsvps_user_id_fkey';
-              columns: ['user_id'];
+              foreignKeyName: 'reports_reviewed_by_fkey';
+              columns: ['reviewed_by'];
               isOneToOne: false;
               referencedRelation: 'profiles';
               referencedColumns: ['id'];
             },
           ];
-        };
-        tickets: {
-          Row: {
-            id: string;
-            user_id: string;
-            event_id: string;
-            kind: 'ticket' | 'member-rsvp';
-            usd_paid: number;
-            qr_payload: string;
-            checked_in_at: string | null;
-            created_at: string;
-          };
-          Insert: {
-            id?: string;
-            user_id: string;
-            event_id: string;
-            kind: 'ticket' | 'member-rsvp';
-            usd_paid?: number;
-            qr_payload: string;
-            checked_in_at?: string | null;
-            created_at?: string;
-          };
-          Update: {
-            id?: string;
-            user_id?: string;
-            event_id?: string;
-            kind?: 'ticket' | 'member-rsvp';
-            usd_paid?: number;
-            qr_payload?: string;
-            checked_in_at?: string | null;
-            created_at?: string;
-          };
-          Relationships: [
-            {
-              foreignKeyName: 'tickets_event_id_fkey';
-              columns: ['event_id'];
-              isOneToOne: false;
-              referencedRelation: 'official_events';
-              referencedColumns: ['id'];
-            },
-            {
-              foreignKeyName: 'tickets_user_id_fkey';
-              columns: ['user_id'];
-              isOneToOne: false;
-              referencedRelation: 'profiles';
-              referencedColumns: ['id'];
-            },
-          ];
-        };
-        venues: {
-          Row: {
-            id: string;
-            name: string;
-            type: 'coworking' | 'cafe' | 'bar' | 'beach' | 'plaza';
-            area: string;
-            rating: number | null;
-            sponsor_deal: Json | null;
-            amenities: Json;
-            blurb: Json;
-            photo_seed: string;
-            published: boolean;
-            sort_order: number;
-            created_at: string;
-            updated_at: string;
-          };
-          Insert: {
-            id: string;
-            name: string;
-            type: 'coworking' | 'cafe' | 'bar' | 'beach' | 'plaza';
-            area: string;
-            rating?: number | null;
-            sponsor_deal?: Json | null;
-            amenities?: Json;
-            blurb?: Json;
-            photo_seed?: string;
-            published?: boolean;
-            sort_order?: number;
-            created_at?: string;
-            updated_at?: string;
-          };
-          Update: {
-            id?: string;
-            name?: string;
-            type?: 'coworking' | 'cafe' | 'bar' | 'beach' | 'plaza';
-            area?: string;
-            rating?: number | null;
-            sponsor_deal?: Json | null;
-            amenities?: Json;
-            blurb?: Json;
-            photo_seed?: string;
-            published?: boolean;
-            sort_order?: number;
-            created_at?: string;
-            updated_at?: string;
-          };
-          Relationships: [];
         };
       };
       Views: { [_ in never]: never };
       Functions: {
-        is_admin: {
+        accept_chat_request: {
           Args: {
-            check_user_id?: string;
+            target_request_id: string;
           };
+          Returns: string;
+        };
+        block_user: {
+          Args: {
+            target_user_id: string;
+          };
+          Returns: undefined;
+        };
+        can_report_message: {
+          Args: {
+            target_message_id: string;
+            target_user_id: string;
+          };
+          Returns: boolean;
+        };
+        can_send_message: {
+          Args: {
+            target_conversation_id: string;
+          };
+          Returns: boolean;
+        };
+        can_view_profile: {
+          Args: {
+            target_user_id: string;
+          };
+          Returns: boolean;
+        };
+        cancel_chat_request: {
+          Args: {
+            target_request_id: string;
+          };
+          Returns: undefined;
+        };
+        cancel_event_rsvp: {
+          Args: {
+            target_event_id: string;
+          };
+          Returns: undefined;
+        };
+        create_chat_request: {
+          Args: {
+            target_recipient_id: string;
+          };
+          Returns: string;
+        };
+        decline_chat_request: {
+          Args: {
+            target_request_id: string;
+          };
+          Returns: undefined;
+        };
+        is_admin: {
+          Args: Record<PropertyKey, never>;
           Returns: boolean;
         };
         is_conversation_member: {
@@ -741,14 +453,56 @@ declare module '@biltme/backend' {
           };
           Returns: boolean;
         };
+        is_conversation_participant: {
+          Args: {
+            target_conversation_id: string;
+          };
+          Returns: boolean;
+        };
+        is_onboarded: {
+          Args: {
+            user_id: string;
+          };
+          Returns: boolean;
+        };
+        join_event: {
+          Args: {
+            target_event_id: string;
+          };
+          Returns: undefined;
+        };
+        profiles_are_blocked: {
+          Args: {
+            other_user_id: string;
+          };
+          Returns: boolean;
+        };
         start_direct_conversation: {
           Args: {
             other_user_id: string;
           };
           Returns: string;
         };
+        unblock_user: {
+          Args: {
+            target_user_id: string;
+          };
+          Returns: undefined;
+        };
       };
-      Enums: { [_ in never]: never };
+      Enums: {
+        chat_request_status: 'pending' | 'accepted' | 'declined' | 'cancelled';
+        language_level: 'beginner' | 'intermediate' | 'advanced';
+        profile_role: 'member' | 'admin';
+        report_reason:
+          | 'harassment'
+          | 'spam'
+          | 'hate'
+          | 'sexual_content'
+          | 'impersonation'
+          | 'other';
+        report_status: 'open' | 'reviewing' | 'resolved' | 'dismissed';
+      };
       CompositeTypes: { [_ in never]: never };
     };
   }

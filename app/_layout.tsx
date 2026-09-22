@@ -24,6 +24,7 @@ import {
 
 import { AuthProvider } from '@/lib/auth';
 import { DataProvider } from '@/lib/data-provider';
+import { I18nProvider } from '@/lib/i18n';
 import { initPostHog } from '@/lib/posthog';
 import { registerServiceWorker } from '@/lib/registerServiceWorker';
 import { reportErrorToParent } from '@/lib/reportPreviewError';
@@ -144,12 +145,20 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <DataProvider>
         <AuthProvider>
-          <HeroUINativeProvider>
-            <Stack>
-              <Stack.Screen name="(tabs)" options={{ title: 'Habits', headerShown: false }} />
-            </Stack>
-            <InstallPrompt />
-          </HeroUINativeProvider>
+          <I18nProvider>
+            <HeroUINativeProvider>
+              <Stack screenOptions={{ headerShown: false }}>
+                <Stack.Screen name="index" />
+                <Stack.Screen name="(auth)" />
+                <Stack.Screen name="(tabs)" />
+                <Stack.Screen name="event/[id]" />
+                <Stack.Screen name="person/[id]" />
+                <Stack.Screen name="chat/[id]" />
+                <Stack.Screen name="settings" />
+              </Stack>
+              <InstallPrompt />
+            </HeroUINativeProvider>
+          </I18nProvider>
         </AuthProvider>
       </DataProvider>
     </GestureHandlerRootView>

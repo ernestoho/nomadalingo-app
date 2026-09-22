@@ -1,40 +1,57 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
 @import 'tailwindcss';
 @import 'uniwind';
-
 @import 'heroui-native/styles';
 
-/*
- * HeroUI Native + Uniwind tokens
- *
- * HeroUI component variants compile to semantic utilities such as bg-accent,
- * text-accent-foreground, bg-default, and text-foreground. The imported
- * heroui-native/styles package defines the default semantic theme and maps it
- * to --color-* Tailwind utilities.
- *
- * When changing brand colors, override semantic tokens inside Uniwind theme
- * variants. Do not put --accent only in a plain :root block: web may look
- * correct through CSS cascade order while Expo Go/native keeps HeroUI's
- * default blue from the active light/dark theme table.
- *
- * Example:
- *
- * @layer theme {
- *   :root {
- *     @variant light {
- *       --accent: oklch(0.63 0.18 148);
- *       --accent-foreground: oklch(0.99 0 0);
- *       --focus: var(--accent);
- *     }
- *
- *     @variant dark {
- *       --accent: oklch(0.63 0.18 148);
- *       --accent-foreground: oklch(0.99 0 0);
- *       --focus: var(--accent);
- *     }
- *   }
- * }
- */
-
 @source './node_modules/heroui-native/lib';
+
+@layer theme {
+  :root {
+    @variant light {
+      --background: oklch(0.98 0.014 85);
+      --foreground: oklch(0.23 0.035 48);
+      --surface: oklch(1 0 0);
+      --surface-foreground: oklch(0.23 0.035 48);
+      --overlay: oklch(1 0 0);
+      --overlay-foreground: oklch(0.23 0.035 48);
+      --muted: oklch(0.55 0.035 55);
+      --default: oklch(0.93 0.024 80);
+      --default-foreground: oklch(0.28 0.035 48);
+      --accent: oklch(0.62 0.17 153);
+      --accent-foreground: oklch(0.99 0 0);
+      --success: oklch(0.62 0.17 153);
+      --success-foreground: oklch(0.99 0 0);
+      --warning: oklch(0.74 0.15 70);
+      --warning-foreground: oklch(0.22 0.035 48);
+      --danger: oklch(0.58 0.22 28);
+      --danger-foreground: oklch(0.99 0 0);
+      --border: oklch(0.88 0.025 78);
+      --divider: oklch(0.9 0.02 78);
+      --focus: var(--accent);
+      --link: oklch(0.52 0.16 153);
+    }
+    @variant dark {
+      --background: oklch(0.18 0.025 48);
+      --foreground: oklch(0.96 0.015 80);
+      --surface: oklch(0.23 0.03 48);
+      --surface-foreground: oklch(0.96 0.015 80);
+      --overlay: oklch(0.23 0.03 48);
+      --overlay-foreground: oklch(0.96 0.015 80);
+      --muted: oklch(0.72 0.025 70);
+      --default: oklch(0.3 0.03 48);
+      --default-foreground: oklch(0.96 0.015 80);
+      --accent: oklch(0.7 0.16 153);
+      --accent-foreground: oklch(0.16 0.03 48);
+      --success: oklch(0.7 0.16 153);
+      --success-foreground: oklch(0.16 0.03 48);
+      --warning: oklch(0.78 0.14 70);
+      --warning-foreground: oklch(0.16 0.03 48);
+      --danger: oklch(0.68 0.19 28);
+      --danger-foreground: oklch(0.99 0 0);
+      --border: oklch(0.35 0.035 48);
+      --divider: oklch(0.32 0.03 48);
+      --focus: var(--accent);
+      --link: oklch(0.74 0.14 153);
+    }
+  }
+}

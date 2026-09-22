@@ -2,25 +2,13 @@ import { focusManager, QueryClient, QueryClientProvider } from '@tanstack/react-
 import { type PropsWithChildren, useEffect, useState } from 'react';
 import { AppState, Platform } from 'react-native';
 
-import { useContentSync } from '@/lib/data/content';
-
-function ContentSync() {
-  useContentSync();
-  return null;
-}
-
 export function DataProvider({ children }: PropsWithChildren) {
   const [queryClient] = useState(
     () =>
       new QueryClient({
         defaultOptions: {
-          queries: {
-            retry: 2,
-            staleTime: 30_000,
-          },
-          mutations: {
-            retry: 1,
-          },
+          queries: { retry: 2, staleTime: 30_000 },
+          mutations: { retry: 0 },
         },
       }),
   );
@@ -33,10 +21,5 @@ export function DataProvider({ children }: PropsWithChildren) {
     return () => subscription.remove();
   }, []);
 
-  return (
-    <QueryClientProvider client={queryClient}>
-      <ContentSync />
-      {children}
-    </QueryClientProvider>
-  );
+  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
 }
