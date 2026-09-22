@@ -24,7 +24,7 @@ export function PinMark({
 
   return (
     <Svg width={width} height={size} viewBox="0 0 24 32" style={style}>
-      <G rotation={PIN_TILT} origin="12, 16">
+      <G transform={`rotate(${PIN_TILT} 12 16)`}>
         <Path
           d="M12 0.6C5.75 0.6 0.9 5.45 0.9 11.7c0 7.9 9.03 18.2 10.35 19.66a1.02 1.02 0 0 0 1.5 0C14.07 29.9 23.1 19.6 23.1 11.7 23.1 5.45 18.25 0.6 12 0.6Z"
           fill={fill}
