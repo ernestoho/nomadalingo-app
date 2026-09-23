@@ -70,7 +70,6 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       'expo-status-bar',
       'expo-font',
       'expo-secure-store',
-      'expo-web-browser',
       'expo-apple-authentication',
       ...nativePlugins,
     ],

@@ -17,11 +17,10 @@ import { LanguageToggle } from '@/components/LanguageToggle';
 import { NomadaLingoWordmark } from '@/components/NomadaLingoLogo';
 import { BRAND_COLORS, BRAND_FONTS } from '@/lib/brand';
 import { requestEmailCode } from '@/lib/auth-actions';
-import { signInWithApple, signInWithGoogle } from '@/lib/social-auth';
+import { signInWithApple } from '@/lib/social-auth';
 import { useI18n } from '@/lib/i18n';
 
 type EntryMode = 'signup' | 'signin' | null;
-type SocialProvider = 'apple' | 'google';
 
 const COPY = {
   es: {
@@ -40,7 +39,6 @@ const COPY = {
     emailPlaceholder: 'tu@correo.com',
     send: 'Continuar',
     sending: 'Enviando…',
-    google: 'Continuar con Google',
     apple: 'Continuar con Apple',
     connecting: 'Conectando…',
     back: 'Volver',
@@ -61,7 +59,6 @@ const COPY = {
     emailPlaceholder: 'you@email.com',
     send: 'Continue',
     sending: 'Sending…',
-    google: 'Continue with Google',
     apple: 'Continue with Apple',
     connecting: 'Connecting…',
     back: 'Back',
@@ -75,7 +72,7 @@ export default function SignInScreen() {
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [socialProvider, setSocialProvider] = useState<SocialProvider | null>(null);
+  const [socialProvider, setSocialProvider] = useState<'apple' | null>(null);
 
   const submit = async () => {
     setError('');
@@ -91,11 +88,11 @@ export default function SignInScreen() {
     router.push({ pathname: '/(auth)/verify', params: { email: email.trim() } });
   };
 
-  const submitSocial = async (provider: SocialProvider) => {
+  const submitApple = async () => {
     setError('');
-    setSocialProvider(provider);
+    setSocialProvider('apple');
     try {
-      const completed = provider === 'apple' ? await signInWithApple() : await signInWithGoogle();
+      const completed = await signInWithApple();
       if (completed) router.replace('/');
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'No se pudo iniciar sesión.');
@@ -212,24 +209,12 @@ export default function SignInScreen() {
                 >
                   <Button.Label style={styles.secondaryButtonLabel}>{copy.signIn}</Button.Label>
                 </Button>
-                {Platform.OS !== 'web' ? (
-                  <Button
-                    className="h-14 rounded-2xl border border-white/40 bg-white/5"
-                    variant="outline"
-                    isDisabled={Boolean(socialProvider)}
-                    onPress={() => void submitSocial('google')}
-                  >
-                    <Button.Label style={styles.secondaryButtonLabel}>
-                      {socialProvider === 'google' ? copy.connecting : copy.google}
-                    </Button.Label>
-                  </Button>
-                ) : null}
                 {Platform.OS === 'ios' ? (
                   <Button
                     className="h-14 rounded-2xl border border-white/40 bg-white/5"
                     variant="outline"
                     isDisabled={Boolean(socialProvider)}
-                    onPress={() => void submitSocial('apple')}
+                    onPress={() => void submitApple()}
                   >
                     <Button.Label style={styles.secondaryButtonLabel}>
                       {socialProvider === 'apple' ? copy.connecting : copy.apple}
