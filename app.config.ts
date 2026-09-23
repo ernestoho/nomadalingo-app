@@ -32,8 +32,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     assetBundlePatterns: ['**/*'],
     ios: {
       usesAppleSignIn: true,
-      infoPlist: {
-        ITSAppUsesNonExemptEncryption: false,
+      config: {
+        usesNonExemptEncryption: false,
       },
       supportsTablet: true,
       bundleIdentifier: process.env.BILT_IOS_BUNDLE_ID ?? 'com.nomadalingo.app',
