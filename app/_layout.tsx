@@ -21,6 +21,7 @@ import {
   type ErrorBoundaryProps,
   SplashScreen,
   Stack,
+  useSegments,
 } from 'expo-router';
 
 import { AuthRouteGuard } from '@/components/AuthRouteGuard';
@@ -54,6 +55,8 @@ Uniwind.setTheme('light');
 void SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  const segments = useSegments();
+  const isLaunchRoute = !segments[0];
   const [loaded, error] = useFonts({
     BricolageGrotesque_700Bold,
     PlusJakartaSans_400Regular,
@@ -157,7 +160,7 @@ export default function RootLayout() {
                   <Stack.Screen name="settings" />
                 </Stack>
               </AuthRouteGuard>
-              <InstallPrompt />
+              {!isLaunchRoute && <InstallPrompt />}
             </HeroUINativeProvider>
           </I18nProvider>
         </AuthProvider>

@@ -18,6 +18,9 @@ export function AuthRouteGuard({ children }: PropsWithChildren) {
   const isPublicAuthRoute = rootSegment === '(auth)' && !isOnboarding;
   const needsProfile = Boolean(user && (isPrivateRoute || isOnboarding || isPublicAuthRoute));
 
+  // The launch screen is public and remains visible until its continue button is pressed.
+  if (!rootSegment) return children;
+
   if (isLoading || (needsProfile && profile.isLoading)) {
     return (
       <View className="bg-background flex-1 items-center justify-center p-6">
