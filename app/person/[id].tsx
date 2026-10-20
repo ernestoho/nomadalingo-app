@@ -17,6 +17,10 @@ import { useRefreshOnFocus } from '@/lib/useRefreshOnFocus';
 
 export default function PersonScreen() {
   const { id = '' } = useLocalSearchParams<{ id?: string }>();
+  return <PersonDetail key={id} id={id} />;
+}
+
+function PersonDetail({ id }: { id: string }) {
   const { user } = useAuth();
   const { language } = useI18n();
   const es = language === 'es';
@@ -40,7 +44,7 @@ export default function PersonScreen() {
           reporter_id: user.id,
           reported_user_id: id,
           reason: 'other',
-          details: 'Reporte enviado desde el perfil.',
+          details: es ? 'Reporte enviado desde el perfil.' : 'Report sent from the profile.',
         });
       setConfirm(null);
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);

@@ -95,7 +95,9 @@ export default function InboxScreen() {
       sections={sections}
       keyExtractor={(item) => item.value.id}
       stickySectionHeadersEnabled={false}
-      refreshing={requestQuery.isRefetching || conversationQuery.isRefetching}
+      refreshing={
+        requestQuery.isRefetching || conversationQuery.isRefetching || peopleQuery.isRefetching
+      }
       onRefresh={() => void refresh()}
       ListHeaderComponent={
         <View style={{ gap: 20, paddingBottom: 24 }}>
