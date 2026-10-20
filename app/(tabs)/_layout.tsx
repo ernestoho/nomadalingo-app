@@ -13,7 +13,7 @@ export default function TabLayout() {
   const { language } = useI18n();
   const es = language === 'es';
   const { user, session, isLoading } = useAuth();
-  const { data: profile, isLoading: profileLoading } = useProfile(user?.id);
+  const { data: profile, isLoading: profileLoading, error: profileError } = useProfile(user?.id);
   const [background, border, accent, muted] = useThemeColor([
     'background',
     'border',
@@ -22,7 +22,13 @@ export default function TabLayout() {
   ]);
 
   if (!isLoading && !session) return <Redirect href="/(auth)" />;
-  if (!isLoading && !profileLoading && session && !profile?.onboarding_completed_at)
+  if (
+    !isLoading &&
+    !profileLoading &&
+    !profileError &&
+    session &&
+    !profile?.onboarding_completed_at
+  )
     return <Redirect href="/(auth)/onboarding" />;
 
   return (

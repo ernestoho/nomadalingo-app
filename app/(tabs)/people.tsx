@@ -99,9 +99,19 @@ export default function PeopleScreen() {
                 : 'Meet people to practice with here.')
           }
           actionLabel={
-            search ? (es ? 'Limpiar búsqueda' : 'Clear search') : es ? 'Actualizar' : 'Refresh'
+            error
+              ? es
+                ? 'Reintentar'
+                : 'Retry'
+              : search
+                ? es
+                  ? 'Limpiar búsqueda'
+                  : 'Clear search'
+                : es
+                  ? 'Actualizar'
+                  : 'Refresh'
           }
-          onAction={() => (search ? setSearch('') : void refetch())}
+          onAction={() => (error ? void refetch() : search ? setSearch('') : void refetch())}
         />
       }
       renderItem={({ item }) => (

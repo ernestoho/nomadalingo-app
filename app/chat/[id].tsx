@@ -1,8 +1,8 @@
 import { useCallback, useRef, useState } from 'react';
 import { FlatList, KeyboardAvoidingView, Platform, View } from 'react-native';
-import { Button, FieldError, Input } from 'heroui-native';
+import { Button, FieldError, Input, Spinner } from 'heroui-native';
 import { randomUUID } from 'expo-crypto';
-import { Redirect, useLocalSearchParams } from 'expo-router';
+import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { Send } from 'lucide-react-native';
 import Animated, { FadeIn, FadeOut, useReducedMotion } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
@@ -51,9 +51,16 @@ export default function ChatScreen() {
       ? conversation?.participant_high_id
       : conversation?.participant_low_id;
   const person = peopleQuery.data?.find((profile) => profile.id === otherId);
+  const queryError = conversationQuery.error || peopleQuery.error || messageQuery.error;
+  const queryLoading =
+    conversationQuery.isLoading || peopleQuery.isLoading || messageQuery.isLoading;
+  const retrying =
+    Boolean(queryError) &&
+    (conversationQuery.isFetching || peopleQuery.isFetching || messageQuery.isFetching);
+  const canSend = Boolean(conversation) && !queryLoading && !queryError;
   const send = async () => {
     const text = body.trim();
-    if (!text || !user || !id || sendMessage.isPending) return;
+    if (!text || !user || !id || !canSend || sendMessage.isPending) return;
     setBody('');
     setError('');
     try {
@@ -114,32 +121,46 @@ export default function ChatScreen() {
         ) : null}
         <FlatList
           ref={listRef}
-          data={messageQuery.error ? [] : messageQuery.data || []}
+          data={canSend ? messageQuery.data || [] : []}
           keyExtractor={(message) => message.id}
           style={{ flex: 1 }}
           contentContainerStyle={{ padding: 20, gap: 14, flexGrow: 1 }}
           keyboardShouldPersistTaps="handled"
-          onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: !reducedMotion })}
+          onContentSizeChange={() => {
+            if (canSend) listRef.current?.scrollToEnd({ animated: !reducedMotion });
+          }}
           ListEmptyComponent={
             <StateView
-              loading={messageQuery.isLoading}
-              error={Boolean(messageQuery.error)}
+              loading={queryLoading || retrying}
+              error={Boolean(queryError)}
               message={
-                messageQuery.error?.message ||
-                (es ? 'Todo empieza con un hola.' : 'It all starts with hello.')
+                queryError?.message ||
+                (!conversation
+                  ? es
+                    ? 'Esta conversación no está disponible.'
+                    : 'This conversation is unavailable.'
+                  : es
+                    ? 'Todo empieza con un hola.'
+                    : 'It all starts with hello.')
               }
               actionLabel={
-                messageQuery.error
+                queryError
                   ? es
                     ? 'Reintentar'
                     : 'Retry'
-                  : es
-                    ? 'Escribir mensaje'
-                    : 'Write a message'
+                  : !conversation
+                    ? es
+                      ? 'Ver conversaciones'
+                      : 'All conversations'
+                    : es
+                      ? 'Escribir mensaje'
+                      : 'Write a message'
               }
-              onAction={() =>
-                messageQuery.error ? void messageQuery.refetch() : inputRef.current?.focus()
-              }
+              onAction={() => {
+                if (queryError) void refresh();
+                else if (!conversation) router.replace('/(tabs)/inbox');
+                else inputRef.current?.focus();
+              }}
             />
           }
           renderItem={({ item: message }) => {
@@ -177,54 +198,60 @@ export default function ChatScreen() {
             );
           }}
         />
-        <View
-          style={{
-            backgroundColor: UI.surface,
-            padding: 14,
-            paddingBottom: insets.bottom + 14,
-            gap: 10,
-            borderTopWidth: 1,
-            borderTopColor: UI.border,
-          }}
-        >
-          {error ? <FieldError>{error}</FieldError> : null}
-          <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 10 }}>
-            <Input
-              ref={inputRef}
-              style={{
-                flex: 1,
-                minHeight: 52,
-                maxHeight: 140,
-                borderRadius: 18,
-                fontFamily: BRAND_FONTS.body,
-              }}
-              value={body}
-              onChangeText={setBody}
-              maxLength={2000}
-              placeholder={es ? 'Escribe un mensaje' : 'Write a message'}
-              accessibilityLabel={es ? 'Mensaje' : 'Message'}
-              editable={!sendMessage.isPending}
-              onSubmitEditing={() => void send()}
-            />
-            <Button
-              isIconOnly
-              accessibilityLabel={
-                sendMessage.isPending
-                  ? es
-                    ? 'Enviando mensaje'
-                    : 'Sending message'
-                  : es
-                    ? 'Enviar mensaje'
-                    : 'Send message'
-              }
-              isDisabled={sendMessage.isPending || !body.trim()}
-              onPress={() => void send()}
-              style={{ height: 52, width: 52, borderRadius: 18 }}
-            >
-              <Send size={21} color={UI.onDark} strokeWidth={2} />
-            </Button>
+        {canSend ? (
+          <View
+            style={{
+              backgroundColor: UI.surface,
+              padding: 14,
+              paddingBottom: insets.bottom + 14,
+              gap: 10,
+              borderTopWidth: 1,
+              borderTopColor: UI.border,
+            }}
+          >
+            {error ? <FieldError>{error}</FieldError> : null}
+            <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 10 }}>
+              <Input
+                ref={inputRef}
+                style={{
+                  flex: 1,
+                  minHeight: 52,
+                  maxHeight: 140,
+                  borderRadius: 18,
+                  fontFamily: BRAND_FONTS.body,
+                }}
+                value={body}
+                onChangeText={setBody}
+                maxLength={2000}
+                placeholder={es ? 'Escribe un mensaje' : 'Write a message'}
+                accessibilityLabel={es ? 'Mensaje' : 'Message'}
+                editable={!sendMessage.isPending}
+                onSubmitEditing={() => void send()}
+              />
+              <Button
+                isIconOnly
+                accessibilityLabel={
+                  sendMessage.isPending
+                    ? es
+                      ? 'Enviando mensaje'
+                      : 'Sending message'
+                    : es
+                      ? 'Enviar mensaje'
+                      : 'Send message'
+                }
+                isDisabled={sendMessage.isPending || !body.trim()}
+                onPress={() => void send()}
+                style={{ height: 52, width: 52, borderRadius: 18 }}
+              >
+                {sendMessage.isPending ? (
+                  <Spinner size="sm" color={UI.onDark} />
+                ) : (
+                  <Send size={21} color={UI.onDark} strokeWidth={2} />
+                )}
+              </Button>
+            </View>
           </View>
-        </View>
+        ) : null}
       </View>
     </KeyboardAvoidingView>
   );

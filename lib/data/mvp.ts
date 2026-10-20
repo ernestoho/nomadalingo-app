@@ -111,14 +111,23 @@ export function useMessages(userId?: string, conversationId?: string) {
     enabled: Boolean(userId && conversationId),
     refetchInterval: 4_000,
     queryFn: async () => {
-      const { data, error } = await bilt
-        .from('messages')
-        .select('*')
-        .eq('conversation_id', conversationId!)
-        .order('created_at')
-        .limit(100);
-      throwIfError(error);
-      return data ?? [];
+      const messages: Message[] = [];
+      const pageSize = 1000;
+      let offset = 0;
+      while (true) {
+        const { data, error } = await bilt
+          .from('messages')
+          .select('*')
+          .eq('conversation_id', conversationId!)
+          .order('created_at')
+          .order('id')
+          .range(offset, offset + pageSize - 1);
+        throwIfError(error);
+        const page = data ?? [];
+        messages.push(...page);
+        if (page.length < pageSize) return messages;
+        offset += pageSize;
+      }
     },
   });
 }
