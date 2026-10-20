@@ -21,6 +21,7 @@ type AssetOptions = {
   markScale: number;
   path: string;
   pin: Color;
+  size?: number;
 };
 
 function cubicPoint(
@@ -140,21 +141,21 @@ function pngChunk(type: string, data: Buffer): Buffer {
   return Buffer.concat([length, typeBuffer, data, checksum]);
 }
 
-function renderAsset({ background, eye, markScale, path, pin }: AssetOptions) {
-  const scanlines = Buffer.alloc((SIZE * 4 + 1) * SIZE);
+function renderAsset({ background, eye, markScale, path, pin, size = SIZE }: AssetOptions) {
+  const scanlines = Buffer.alloc((size * 4 + 1) * size);
   const step = 1 / SUPERSAMPLE;
 
-  for (let y = 0; y < SIZE; y += 1) {
-    const rowOffset = y * (SIZE * 4 + 1);
+  for (let y = 0; y < size; y += 1) {
+    const rowOffset = y * (size * 4 + 1);
     scanlines[rowOffset] = 0;
-    for (let x = 0; x < SIZE; x += 1) {
+    for (let x = 0; x < size; x += 1) {
       const samples: Color[] = [];
       for (let sampleY = 0; sampleY < SUPERSAMPLE; sampleY += 1) {
         for (let sampleX = 0; sampleX < SUPERSAMPLE; sampleX += 1) {
           samples.push(
             sampleMark(
-              x + (sampleX + 0.5) * step,
-              y + (sampleY + 0.5) * step,
+              (x + (sampleX + 0.5) * step) * (SIZE / size),
+              (y + (sampleY + 0.5) * step) * (SIZE / size),
               markScale,
               pin,
               eye,
@@ -172,8 +173,8 @@ function renderAsset({ background, eye, markScale, path, pin }: AssetOptions) {
   }
 
   const header = Buffer.alloc(13);
-  header.writeUInt32BE(SIZE, 0);
-  header.writeUInt32BE(SIZE, 4);
+  header.writeUInt32BE(size, 0);
+  header.writeUInt32BE(size, 4);
   header[8] = 8;
   header[9] = 6;
   const png = Buffer.concat([
@@ -185,7 +186,37 @@ function renderAsset({ background, eye, markScale, path, pin }: AssetOptions) {
   writeFileSync(path, png);
 }
 
+function ensurePwaBrandAssets(projectRoot: string) {
+  const directory = join(projectRoot, 'public', 'icons');
+  const versionPath = join(directory, '.asset-version');
+  const version = 'nomadalingo-pwa-v1';
+  const definitions = [
+    ['icon-192.png', 192],
+    ['icon-512.png', 512],
+    ['icon-512-maskable.png', 512],
+    ['apple-touch-icon.png', 180],
+  ] as const;
+  const assets: AssetOptions[] = definitions.map(([filename, size]) => ({
+    path: join(directory, filename),
+    size,
+    background: COLORS.sand,
+    eye: COLORS.ink,
+    pin: COLORS.teal,
+    markScale: 0.58,
+  }));
+  if (
+    existsSync(versionPath) &&
+    readFileSync(versionPath, 'utf8') === version &&
+    assets.every(({ path }) => existsSync(path))
+  )
+    return;
+  mkdirSync(directory, { recursive: true });
+  for (const asset of assets) renderAsset(asset);
+  writeFileSync(versionPath, version);
+}
+
 export function ensureNativeBrandAssets(projectRoot: string) {
+  ensurePwaBrandAssets(projectRoot);
   const outputDirectory = join(projectRoot, 'assets', 'images', 'native-brand');
   const versionPath = join(outputDirectory, '.asset-version');
   const assets: AssetOptions[] = [

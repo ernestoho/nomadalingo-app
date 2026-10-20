@@ -159,7 +159,7 @@ export default function RootLayout() {
                   <Stack.Screen name="event/[id]" />
                   <Stack.Screen name="person/[id]" />
                   <Stack.Screen name="chat/[id]" />
-                  <Stack.Screen name="settings" />
+                  <Stack.Screen name="settings/index" />
                 </Stack>
               </AuthRouteGuard>
               {!isLaunchRoute && <InstallPrompt />}

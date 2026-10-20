@@ -1,63 +1,54 @@
-import { ScrollView, View } from 'react-native';
-import { Avatar, Button, Card, Chip, Typography } from 'heroui-native';
 import { router } from 'expo-router';
-
+import { Settings } from 'lucide-react-native';
+import { Button } from 'heroui-native';
+import { AppScreen } from '@/components/AppScreen';
+import { ProfileSummary } from '@/components/ProfileSummary';
+import { StateView } from '@/components/StateView';
+import { UI } from '@/components/Coastal';
 import { useAuth } from '@/lib/auth';
 import { useProfile } from '@/lib/data/mvp';
 import { useI18n } from '@/lib/i18n';
+import { useRefreshOnFocus } from '@/lib/useRefreshOnFocus';
 
 export default function ProfileScreen() {
   const { user } = useAuth();
   const { language } = useI18n();
-  const { data: profile } = useProfile(user?.id);
-
+  const es = language === 'es';
+  const { data: profile, isLoading, error, refetch } = useProfile(user?.id);
+  useRefreshOnFocus(refetch);
   return (
-    <ScrollView
-      className="bg-background flex-1"
-      contentContainerClassName="gap-5 p-5 pb-safe-offset-8"
+    <AppScreen
+      title={es ? 'Tu perfil' : 'Your profile'}
+      onRefresh={() => void refetch()}
+      action={
+        <Button
+          isIconOnly
+          variant="secondary"
+          accessibilityLabel={es ? 'Configuración' : 'Settings'}
+          onPress={() => router.push('/settings')}
+          style={{ borderRadius: 18, width: 48, height: 48 }}
+        >
+          <Settings size={22} strokeWidth={2} color={UI.tealDarker} />
+        </Button>
+      }
     >
-      <Typography.Heading type="h2">{language === 'es' ? 'Perfil' : 'Profile'}</Typography.Heading>
-      <Card className="items-center gap-4 p-6">
-        <Avatar size="lg" alt={profile?.display_name || 'N'}>
-          <Avatar.Fallback>
-            {(profile?.display_name || 'N').slice(0, 2).toUpperCase()}
-          </Avatar.Fallback>
-        </Avatar>
-        <Typography.Heading type="h3">{profile?.display_name || 'Nómada'}</Typography.Heading>
-        {profile?.bio ? (
-          <Typography.Paragraph align="center" color="muted">
-            {profile.bio}
-          </Typography.Paragraph>
-        ) : null}
-      </Card>
-      <View className="gap-3">
-        <Typography.Heading type="h4">{language === 'es' ? 'Habla' : 'Speaks'}</Typography.Heading>
-        <View className="flex-row flex-wrap gap-2">
-          {profile?.spoken_languages.map((item) => (
-            <Chip key={item}>
-              <Chip.Label>{item}</Chip.Label>
-            </Chip>
-          ))}
-        </View>
-      </View>
-      <View className="gap-3">
-        <Typography.Heading type="h4">
-          {language === 'es' ? 'Practica' : 'Practices'}
-        </Typography.Heading>
-        <View className="flex-row flex-wrap gap-2">
-          {profile?.learning_languages.map((item) => (
-            <Chip key={item} color="accent">
-              <Chip.Label>{item}</Chip.Label>
-            </Chip>
-          ))}
-        </View>
-      </View>
-      <Button variant="secondary" onPress={() => router.push('/settings/edit-profile')}>
-        <Button.Label>{language === 'es' ? 'Editar perfil' : 'Edit profile'}</Button.Label>
-      </Button>
-      <Button variant="ghost" onPress={() => router.push('/settings')}>
-        <Button.Label>{language === 'es' ? 'Configuración' : 'Settings'}</Button.Label>
-      </Button>
-    </ScrollView>
+      {profile && !error ? (
+        <ProfileSummary
+          profile={profile}
+          language={language}
+          onEdit={() => router.push('/settings/edit-profile')}
+        />
+      ) : (
+        <StateView
+          loading={isLoading}
+          error={Boolean(error)}
+          message={
+            error?.message || (es ? 'No se pudo cargar tu perfil.' : 'Could not load your profile.')
+          }
+          actionLabel={es ? 'Reintentar' : 'Retry'}
+          onAction={() => void refetch()}
+        />
+      )}
+    </AppScreen>
   );
 }

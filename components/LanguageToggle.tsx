@@ -1,4 +1,5 @@
 import { StyleSheet } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { Button } from 'heroui-native';
 
 import { BRAND_COLORS, BRAND_FONTS } from '@/lib/brand';
@@ -12,7 +13,10 @@ export function LanguageToggle({ onDark = false }: { onDark?: boolean }) {
       size="sm"
       variant={onDark ? 'outline' : 'ghost'}
       className={onDark ? 'min-w-16 rounded-full border-white/40 bg-black/10' : undefined}
-      onPress={() => setLanguage(language === 'es' ? 'en' : 'es')}
+      onPress={() => {
+        void Haptics.selectionAsync();
+        setLanguage(language === 'es' ? 'en' : 'es');
+      }}
       accessibilityLabel={
         language === 'es' ? 'Cambiar idioma a inglés' : 'Switch language to Spanish'
       }

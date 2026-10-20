@@ -1,6 +1,7 @@
 import type { PropsWithChildren, ReactNode } from 'react';
-import { RefreshControl, ScrollView, View } from 'react-native';
-import { Typography } from 'heroui-native';
+import { KeyboardAvoidingView, Platform, RefreshControl, ScrollView, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { layout, ScreenHeading, UI } from '@/components/Coastal';
 
 export function AppScreen({
   title,
@@ -8,30 +9,46 @@ export function AppScreen({
   children,
   refreshing = false,
   onRefresh,
+  keyboard = false,
+  topInset = true,
 }: PropsWithChildren<{
-  title: string;
+  title?: string;
   action?: ReactNode;
   refreshing?: boolean;
   onRefresh?: () => void;
+  keyboard?: boolean;
+  topInset?: boolean;
 }>) {
+  const insets = useSafeAreaInsets();
   return (
-    <View className="bg-background flex-1">
+    <KeyboardAvoidingView
+      style={layout.screen}
+      behavior={keyboard && Platform.OS === 'ios' ? 'padding' : undefined}
+    >
       <ScrollView
-        className="flex-1"
-        contentContainerClassName="gap-5 px-5 pb-safe-offset-8 pt-safe-offset-4"
+        style={{ flex: 1 }}
         keyboardShouldPersistTaps="handled"
+        contentContainerStyle={[
+          layout.content,
+          { paddingTop: topInset ? insets.top + 22 : 22, paddingBottom: insets.bottom + 32 },
+        ]}
         refreshControl={
-          onRefresh ? <RefreshControl refreshing={refreshing} onRefresh={onRefresh} /> : undefined
+          onRefresh ? (
+            <RefreshControl
+              tintColor={UI.tealDarker}
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+            />
+          ) : undefined
         }
       >
-        <View className="flex-row items-center justify-between gap-4">
-          <Typography.Heading type="h2" className="flex-1">
-            {title}
-          </Typography.Heading>
-          {action}
-        </View>
+        {title ? (
+          <ScreenHeading title={title} action={action} />
+        ) : action ? (
+          <View>{action}</View>
+        ) : null}
         {children}
       </ScrollView>
-    </View>
+    </KeyboardAvoidingView>
   );
 }

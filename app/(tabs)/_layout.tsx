@@ -3,15 +3,19 @@ import { Redirect, Tabs } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useThemeColor } from 'heroui-native';
 
+import * as Haptics from 'expo-haptics';
+import { BRAND_FONTS } from '@/lib/brand';
+import { useI18n } from '@/lib/i18n';
 import { useAuth } from '@/lib/auth';
 import { useProfile } from '@/lib/data/mvp';
 
 export default function TabLayout() {
+  const { language } = useI18n();
+  const es = language === 'es';
   const { user, session, isLoading } = useAuth();
   const { data: profile, isLoading: profileLoading } = useProfile(user?.id);
-  const [background, foreground, border, accent, muted] = useThemeColor([
+  const [background, border, accent, muted] = useThemeColor([
     'background',
-    'foreground',
     'border',
     'accent',
     'muted',
@@ -25,33 +29,45 @@ export default function TabLayout() {
     <>
       <StatusBar {...{ style: 'dark' }} />
       <Tabs
+        screenListeners={({ navigation, route }) => ({
+          tabPress: () => {
+            const state = navigation.getState();
+            if (state.routes[state.index]?.key !== route.key) void Haptics.selectionAsync();
+          },
+        })}
         screenOptions={{
           headerShown: false,
           sceneStyle: { backgroundColor: background },
-          tabBarStyle: { backgroundColor: background, borderTopColor: border },
+          tabBarStyle: {
+            backgroundColor: 'white',
+            borderTopColor: border,
+            elevation: 0,
+            shadowOpacity: 0,
+          },
           tabBarActiveTintColor: accent,
           tabBarInactiveTintColor: muted,
-          tabBarLabelStyle: { color: foreground },
+          tabBarLabelStyle: { fontFamily: BRAND_FONTS.bold, fontSize: 11, marginBottom: 3 },
+          tabBarItemStyle: { paddingTop: 5 },
         }}
       >
         <Tabs.Screen
           name="index"
           options={{
-            title: 'Inicio',
+            title: es ? 'Inicio' : 'Home',
             tabBarIcon: ({ color, size }) => <Home color={color} size={size} />,
           }}
         />
         <Tabs.Screen
           name="events"
           options={{
-            title: 'Eventos',
+            title: es ? 'Eventos' : 'Events',
             tabBarIcon: ({ color, size }) => <CalendarDays color={color} size={size} />,
           }}
         />
         <Tabs.Screen
           name="people"
           options={{
-            title: 'Personas',
+            title: es ? 'Personas' : 'People',
             tabBarIcon: ({ color, size }) => <Languages color={color} size={size} />,
           }}
         />
@@ -65,7 +81,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="profile"
           options={{
-            title: 'Perfil',
+            title: es ? 'Perfil' : 'Profile',
             tabBarIcon: ({ color, size }) => <UserRound color={color} size={size} />,
           }}
         />

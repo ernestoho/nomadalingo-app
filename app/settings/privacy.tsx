@@ -1,20 +1,22 @@
-import { ScrollView } from 'react-native';
-import { Stack } from 'expo-router';
-import { Typography } from 'heroui-native';
+import { ShieldCheck } from 'lucide-react-native';
+import { AppScreen } from '@/components/AppScreen';
+import { Copy, Heading, UI } from '@/components/Coastal';
+import { RouteHeader } from '@/components/RouteHeader';
 
 export default function PrivacyScreen() {
   return (
-    <ScrollView className="bg-background flex-1" contentContainerClassName="gap-4 p-safe-offset-5">
-      <Stack.Screen options={{ headerShown: true, title: 'Privacidad' }} />
-      <Typography.Heading type="h2">Privacidad</Typography.Heading>
-      <Typography.Paragraph>
+    <AppScreen topInset={false}>
+      <RouteHeader title="Privacidad" fallback="/settings" fallbackLabel="Configuración" />
+      <ShieldCheck size={40} color={UI.tealDarker} strokeWidth={1.7} />
+      <Heading size={36}>Privacidad</Heading>
+      <Copy size={17}>
         NómadaLingo usa tu cuenta, perfil de idiomas, reservas y mensajes para ofrecer la comunidad.
         Tu correo no aparece en tu perfil público. No vendemos tus datos.
-      </Typography.Paragraph>
-      <Typography.Paragraph>
+      </Copy>
+      <Copy size={17}>
         Los reportes de seguridad pueden incluir el mensaje reportado. Puedes bloquear personas y
         eliminar tu cuenta desde Configuración.
-      </Typography.Paragraph>
-    </ScrollView>
+      </Copy>
+    </AppScreen>
   );
 }

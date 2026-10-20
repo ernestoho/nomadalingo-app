@@ -1,64 +1,50 @@
 import { FlatList, View } from 'react-native';
-import { Button, Card, Chip, Typography } from 'heroui-native';
-import { router } from 'expo-router';
-
+import { CalendarDays } from 'lucide-react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useEvents } from '@/lib/data/mvp';
 import { useI18n } from '@/lib/i18n';
+import { layout, ScreenHeading } from '@/components/Coastal';
+import { EventCard } from '@/components/EventCard';
+import { StateView } from '@/components/StateView';
+import { useRefreshOnFocus } from '@/lib/useRefreshOnFocus';
 
 export default function EventsScreen() {
   const { language } = useI18n();
-  const { data = [], isLoading, error, refetch } = useEvents();
-
+  const es = language === 'es';
+  const insets = useSafeAreaInsets();
+  const { data = [], isLoading, isRefetching, error, refetch } = useEvents();
+  useRefreshOnFocus(refetch);
   return (
     <FlatList
-      className="bg-background flex-1"
-      contentContainerClassName="gap-4 p-5 pb-safe-offset-8"
-      data={data}
+      style={layout.screen}
+      contentContainerStyle={[
+        layout.content,
+        { paddingTop: insets.top + 22, paddingBottom: insets.bottom + 32 },
+      ]}
+      data={error ? [] : data}
       keyExtractor={(item) => item.id}
-      refreshing={isLoading}
+      refreshing={isRefetching}
       onRefresh={() => void refetch()}
+      ItemSeparatorComponent={() => <View style={{ height: 18 }} />}
       ListHeaderComponent={
-        <Typography.Heading type="h2">
-          {language === 'es' ? 'Eventos' : 'Events'}
-        </Typography.Heading>
+        <View style={{ paddingBottom: 24 }}>
+          <ScreenHeading title={es ? 'Nos vemos\npor aquí.' : 'See you\naround.'} />
+        </View>
       }
       ListEmptyComponent={
-        <Typography.Paragraph color="muted">
-          {error
-            ? error.message
-            : language === 'es'
-              ? 'No hay eventos publicados todavía.'
-              : 'No events are published yet.'}
-        </Typography.Paragraph>
+        <StateView
+          icon={CalendarDays}
+          loading={isLoading}
+          error={Boolean(error)}
+          message={
+            error?.message ||
+            (es ? 'Los nuevos encuentros aparecerán aquí.' : 'New meetups will appear here.')
+          }
+          actionLabel={es ? 'Actualizar' : 'Refresh'}
+          onAction={() => void refetch()}
+        />
       }
-      renderItem={({ item }) => (
-        <Card className="gap-3 p-5">
-          <View className="flex-row items-center justify-between gap-3">
-            <Chip size="sm" variant="soft" color="accent">
-              <Chip.Label>{item.area}</Chip.Label>
-            </Chip>
-            <Typography.Paragraph type="body-sm" color="muted">
-              {new Date(item.starts_at).toLocaleDateString(language === 'es' ? 'es-DO' : 'en-US', {
-                month: 'short',
-                day: 'numeric',
-              })}
-            </Typography.Paragraph>
-          </View>
-          <Typography.Heading type="h3">
-            {language === 'es' ? item.title_es : item.title_en}
-          </Typography.Heading>
-          <Typography.Paragraph color="muted">{item.location_name}</Typography.Paragraph>
-          <Typography.Paragraph type="body-sm" color="muted">
-            {item.rsvp_count}/{item.capacity} {language === 'es' ? 'personas' : 'people'}
-          </Typography.Paragraph>
-          <Button
-            variant="secondary"
-            onPress={() => router.push({ pathname: '/event/[id]', params: { id: item.id } })}
-          >
-            <Button.Label>{language === 'es' ? 'Ver detalles' : 'View details'}</Button.Label>
-          </Button>
-        </Card>
-      )}
+      renderItem={({ item }) => <EventCard event={item} language={language} />}
     />
   );
 }

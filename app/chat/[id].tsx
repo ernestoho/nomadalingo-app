@@ -1,26 +1,61 @@
-import { useRef, useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
-import { Button, Input, Typography } from 'heroui-native';
+import { useCallback, useRef, useState } from 'react';
+import { FlatList, KeyboardAvoidingView, Platform, View } from 'react-native';
+import { Button, FieldError, Input } from 'heroui-native';
 import { randomUUID } from 'expo-crypto';
-import { Redirect, Stack, useLocalSearchParams } from 'expo-router';
-
+import { Redirect, useLocalSearchParams } from 'expo-router';
+import { Send } from 'lucide-react-native';
+import Animated, { FadeIn, FadeOut, useReducedMotion } from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Copy, ProfileAvatar, UI, layout } from '@/components/Coastal';
+import { RouteHeader } from '@/components/RouteHeader';
+import { StateView } from '@/components/StateView';
 import { useAuth } from '@/lib/auth';
-import { useMessages, useMvpActions } from '@/lib/data/mvp';
+import {
+  useConversations,
+  useMessages,
+  useMvpActions,
+  usePeople,
+  type Message,
+} from '@/lib/data/mvp';
 import { useI18n } from '@/lib/i18n';
+import { BRAND_FONTS } from '@/lib/brand';
+import { useRefreshOnFocus } from '@/lib/useRefreshOnFocus';
 
 export default function ChatScreen() {
   const { id = '' } = useLocalSearchParams<{ id?: string }>();
   const { isLoading, user } = useAuth();
   const { language } = useI18n();
-  const { data: messages = [] } = useMessages(user?.id, id);
+  const es = language === 'es';
+  const insets = useSafeAreaInsets();
+  const reducedMotion = useReducedMotion();
+  const messageQuery = useMessages(user?.id, id);
+  const peopleQuery = usePeople(user?.id);
+  const conversationQuery = useConversations(user?.id);
+  const { refetch: refetchMessages } = messageQuery;
+  const { refetch: refetchPeople } = peopleQuery;
+  const { refetch: refetchConversations } = conversationQuery;
+  const refresh = useCallback(
+    () => Promise.all([refetchMessages(), refetchPeople(), refetchConversations()]),
+    [refetchMessages, refetchPeople, refetchConversations],
+  );
+  useRefreshOnFocus(refresh);
   const { sendMessage } = useMvpActions();
   const [body, setBody] = useState('');
-  const scrollRef = useRef<ScrollView>(null);
-
+  const [error, setError] = useState('');
+  const listRef = useRef<FlatList<Message>>(null);
+  const inputRef = useRef<React.ComponentRef<typeof Input>>(null);
+  const conversation = conversationQuery.data?.find((item) => item.id === id);
+  const otherId =
+    conversation?.participant_low_id === user?.id
+      ? conversation?.participant_high_id
+      : conversation?.participant_low_id;
+  const person = peopleQuery.data?.find((profile) => profile.id === otherId);
   const send = async () => {
     const text = body.trim();
-    if (!text || !user || !id) return;
+    if (!text || !user || !id || sendMessage.isPending) return;
     setBody('');
+    setError('');
     try {
       await sendMessage.mutateAsync({
         conversation_id: id,
@@ -28,71 +63,168 @@ export default function ChatScreen() {
         client_id: randomUUID(),
         body: text,
       });
-    } catch {
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch (caught) {
       setBody(text);
+      setError(
+        caught instanceof Error
+          ? caught.message
+          : es
+            ? 'No se pudo enviar el mensaje.'
+            : 'Could not send your message.',
+      );
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     }
   };
-
   if (isLoading) return null;
   if (!user) return <Redirect href="/(auth)" />;
-
   return (
     <KeyboardAvoidingView
-      className="bg-background flex-1"
+      style={layout.screen}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={90}
     >
-      <Stack.Screen
-        options={{ headerShown: true, title: language === 'es' ? 'Conversación' : 'Conversation' }}
-      />
-      <ScrollView
-        ref={scrollRef}
-        className="flex-1"
-        contentContainerClassName="gap-3 p-4"
-        onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: true })}
-      >
-        {messages.length ? (
-          messages.map((message) => {
-            const mine = message.sender_id === user?.id;
+      <View style={{ width: '100%', maxWidth: 760, alignSelf: 'center', flex: 1 }}>
+        <View style={{ paddingHorizontal: 20 }}>
+          <RouteHeader
+            title={person?.display_name || (es ? 'Conversación' : 'Conversation')}
+            fallback="/(tabs)/inbox"
+            fallbackLabel={es ? 'Ver conversaciones' : 'All conversations'}
+          />
+        </View>
+        {person ? (
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 12,
+              paddingHorizontal: 22,
+              paddingVertical: 14,
+              backgroundColor: UI.surface,
+            }}
+          >
+            <ProfileAvatar name={person.display_name} id={person.id} size={42} />
+            <View style={{ flex: 1 }}>
+              <Copy bold>{person.display_name}</Copy>
+              <Copy muted size={12}>
+                {person.learning_languages.join(' · ')}
+              </Copy>
+            </View>
+          </View>
+        ) : null}
+        <FlatList
+          ref={listRef}
+          data={messageQuery.error ? [] : messageQuery.data || []}
+          keyExtractor={(message) => message.id}
+          style={{ flex: 1 }}
+          contentContainerStyle={{ padding: 20, gap: 14, flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
+          onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: !reducedMotion })}
+          ListEmptyComponent={
+            <StateView
+              loading={messageQuery.isLoading}
+              error={Boolean(messageQuery.error)}
+              message={
+                messageQuery.error?.message ||
+                (es ? 'Todo empieza con un hola.' : 'It all starts with hello.')
+              }
+              actionLabel={
+                messageQuery.error
+                  ? es
+                    ? 'Reintentar'
+                    : 'Retry'
+                  : es
+                    ? 'Escribir mensaje'
+                    : 'Write a message'
+              }
+              onAction={() =>
+                messageQuery.error ? void messageQuery.refetch() : inputRef.current?.focus()
+              }
+            />
+          }
+          renderItem={({ item: message }) => {
+            const mine = message.sender_id === user.id;
             return (
-              <View
-                key={message.id}
-                className={`max-w-[82%] rounded-2xl p-3 ${mine ? 'bg-accent self-end' : 'bg-surface-secondary self-start'}`}
+              <Animated.View
+                entering={FadeIn.duration(130)}
+                exiting={FadeOut.duration(90)}
+                style={{
+                  maxWidth: '86%',
+                  alignSelf: mine ? 'flex-end' : 'flex-start',
+                  borderRadius: 22,
+                  borderBottomRightRadius: mine ? 5 : 22,
+                  borderBottomLeftRadius: mine ? 22 : 5,
+                  backgroundColor: mine ? UI.tealDarker : UI.surface,
+                  paddingHorizontal: 17,
+                  paddingVertical: 12,
+                  gap: 5,
+                }}
               >
-                <Typography.Paragraph
-                  className={mine ? 'text-accent-foreground' : 'text-foreground'}
-                >
+                <Copy light={mine} size={16}>
                   {message.deleted_at
-                    ? language === 'es'
+                    ? es
                       ? 'Mensaje eliminado'
                       : 'Message removed'
                     : message.body}
-                </Typography.Paragraph>
-              </View>
+                </Copy>
+                <Copy light={mine} muted size={11} style={{ textAlign: 'right' }}>
+                  {new Date(message.created_at).toLocaleTimeString(es ? 'es-DO' : 'en-US', {
+                    hour: 'numeric',
+                    minute: '2-digit',
+                  })}
+                </Copy>
+              </Animated.View>
             );
-          })
-        ) : (
-          <Typography.Paragraph align="center" color="muted">
-            {language === 'es' ? 'Empieza la conversación.' : 'Start the conversation.'}
-          </Typography.Paragraph>
-        )}
-      </ScrollView>
-      <View className="border-border pb-safe-offset-3 flex-row gap-2 border-t p-3">
-        <Input
-          className="flex-1"
-          value={body}
-          onChangeText={setBody}
-          maxLength={2000}
-          placeholder={language === 'es' ? 'Escribe un mensaje' : 'Write a message'}
-          onSubmitEditing={() => void send()}
+          }}
         />
-        <Button
-          isIconOnly
-          isDisabled={sendMessage.isPending || !body.trim()}
-          onPress={() => void send()}
+        <View
+          style={{
+            backgroundColor: UI.surface,
+            padding: 14,
+            paddingBottom: insets.bottom + 14,
+            gap: 10,
+            borderTopWidth: 1,
+            borderTopColor: UI.border,
+          }}
         >
-          <Button.Label>↑</Button.Label>
-        </Button>
+          {error ? <FieldError>{error}</FieldError> : null}
+          <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 10 }}>
+            <Input
+              ref={inputRef}
+              style={{
+                flex: 1,
+                minHeight: 52,
+                maxHeight: 140,
+                borderRadius: 18,
+                fontFamily: BRAND_FONTS.body,
+              }}
+              value={body}
+              onChangeText={setBody}
+              maxLength={2000}
+              placeholder={es ? 'Escribe un mensaje' : 'Write a message'}
+              accessibilityLabel={es ? 'Mensaje' : 'Message'}
+              editable={!sendMessage.isPending}
+              onSubmitEditing={() => void send()}
+            />
+            <Button
+              isIconOnly
+              accessibilityLabel={
+                sendMessage.isPending
+                  ? es
+                    ? 'Enviando mensaje'
+                    : 'Sending message'
+                  : es
+                    ? 'Enviar mensaje'
+                    : 'Send message'
+              }
+              isDisabled={sendMessage.isPending || !body.trim()}
+              onPress={() => void send()}
+              style={{ height: 52, width: 52, borderRadius: 18 }}
+            >
+              <Send size={21} color={UI.onDark} strokeWidth={2} />
+            </Button>
+          </View>
+        </View>
       </View>
     </KeyboardAvoidingView>
   );

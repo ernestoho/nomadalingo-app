@@ -4,90 +4,65 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  StyleSheet,
   View,
+  useWindowDimensions,
 } from 'react-native';
 import { router } from 'expo-router';
-import { Button, FieldError, Input, Label, TextField, Typography } from 'heroui-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { Button, FieldError, Input, Label, TextField } from 'heroui-native';
 import { StatusBar } from 'expo-status-bar';
-
+import { ArrowRight, Mail } from 'lucide-react-native';
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import welcomeBackground from '@/assets/images/auth-beach.png';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { NomadaLingoWordmark } from '@/components/NomadaLingoLogo';
-import { BRAND_COLORS, BRAND_FONTS } from '@/lib/brand';
+import { Action, Copy, Heading, UI, layout } from '@/components/Coastal';
+import { BRAND_FONTS } from '@/lib/brand';
 import { requestEmailCode } from '@/lib/auth-actions';
 import { signInWithApple } from '@/lib/social-auth';
 import { useI18n } from '@/lib/i18n';
 
 type EntryMode = 'signup' | 'signin' | null;
-
-const COPY = {
-  es: {
-    headline: 'Practica un idioma con gente real en Punta Cana.',
-    tagline: 'Dos idiomas. Un coro.',
-    stats: [
-      ['2', 'idiomas'],
-      ['1', 'comunidad'],
-      ['0', 'presión'],
-    ],
-    create: 'Crear cuenta',
-    signIn: 'Ya tengo cuenta',
-    signupTitle: 'Crea tu cuenta',
-    signinTitle: 'Inicia sesión',
-    email: 'Correo electrónico',
-    emailPlaceholder: 'tu@correo.com',
-    send: 'Continuar',
-    sending: 'Enviando…',
-    apple: 'Continuar con Apple',
-    connecting: 'Conectando…',
-    back: 'Volver',
-  },
-  en: {
-    headline: 'Practice a language with real people in Punta Cana.',
-    tagline: 'Two languages. One community.',
-    stats: [
-      ['2', 'languages'],
-      ['1', 'community'],
-      ['0', 'pressure'],
-    ],
-    create: 'Create account',
-    signIn: 'I have an account',
-    signupTitle: 'Create your account',
-    signinTitle: 'Sign in',
-    email: 'Email address',
-    emailPlaceholder: 'you@email.com',
-    send: 'Continue',
-    sending: 'Sending…',
-    apple: 'Continue with Apple',
-    connecting: 'Connecting…',
-    back: 'Back',
-  },
-} as const;
-
 export default function SignInScreen() {
   const { language } = useI18n();
-  const copy = COPY[language];
+  const es = language === 'es';
+  const insets = useSafeAreaInsets();
+  const { width, height } = useWindowDimensions();
+  const wide = width >= 900;
   const [mode, setMode] = useState<EntryMode>(null);
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [socialProvider, setSocialProvider] = useState<'apple' | null>(null);
-
+  const showError = (message: string) => {
+    setError(message);
+    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+  };
   const submit = async () => {
+    if (isSubmitting) return;
     setError('');
     setIsSubmitting(true);
-    const result = await requestEmailCode(email);
-    setIsSubmitting(false);
-
-    if (result.error) {
-      setError(result.error.message);
-      return;
+    try {
+      const result = await requestEmailCode(email);
+      if (result.error) {
+        showError(result.error.message);
+        return;
+      }
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      router.push({ pathname: '/(auth)/verify', params: { email: email.trim() } });
+    } catch (caught) {
+      showError(
+        caught instanceof Error
+          ? caught.message
+          : es
+            ? 'No se pudo enviar el código.'
+            : 'Could not send your code.',
+      );
+    } finally {
+      setIsSubmitting(false);
     }
-
-    router.push({ pathname: '/(auth)/verify', params: { email: email.trim() } });
   };
-
   const submitApple = async () => {
     setError('');
     setSocialProvider('apple');
@@ -95,199 +70,200 @@ export default function SignInScreen() {
       const completed = await signInWithApple();
       if (completed) router.replace('/');
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'No se pudo iniciar sesión.');
+      showError(
+        caught instanceof Error
+          ? caught.message
+          : es
+            ? 'No se pudo iniciar sesión.'
+            : 'Could not sign in.',
+      );
     } finally {
       setSocialProvider(null);
     }
   };
-
+  const choose = (value: EntryMode) => {
+    setMode(value);
+    setError('');
+    void Haptics.selectionAsync();
+  };
   return (
-    <ImageBackground
-      source={welcomeBackground}
-      resizeMode="cover"
-      style={{ flex: 1, width: '100%', height: '100%' }}
-      accessibilityIgnoresInvertColors
+    <KeyboardAvoidingView
+      style={{ flex: 1, backgroundColor: UI.ink }}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <StatusBar {...{ style: 'light' }} />
-      <LinearGradient
-        pointerEvents="none"
-        colors={[BRAND_COLORS.overlayTop, BRAND_COLORS.overlayMiddle, BRAND_COLORS.overlayBottom]}
-        locations={[0, 0.42, 1]}
-        className="absolute inset-0"
-      />
-      <KeyboardAvoidingView
-        className="flex-1"
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      {/* Expo StatusBar uses a string style enum, not a React Native style object. */}
+      {/* eslint-disable-next-line react/style-prop-object */}
+      <StatusBar style="light" />
+      <ScrollView
+        keyboardShouldPersistTaps="handled"
+        bounces={false}
+        contentContainerStyle={{ flexGrow: 1, flexDirection: wide ? 'row' : 'column' }}
       >
-        <ScrollView
-          contentContainerClassName="min-h-full flex-grow justify-between px-4 pb-safe-offset-5 pt-safe-offset-4"
-          keyboardShouldPersistTaps="handled"
-          bounces={false}
+        <ImageBackground
+          source={welcomeBackground}
+          resizeMode="cover"
+          imageStyle={{ width: '100%', height: '100%' }}
+          style={{
+            width: wide ? '55%' : '100%',
+            height: 'auto',
+            minHeight: wide ? height : mode ? 270 : 400,
+            flexGrow: wide ? 0 : 1,
+          }}
         >
-          <View className="flex-row items-center justify-between gap-4">
-            <NomadaLingoWordmark
-              size={30}
-              tint={BRAND_COLORS.onDark}
-              pinFill={BRAND_COLORS.tealLight}
-              pinEye={BRAND_COLORS.ink}
-              style={styles.wordmark}
-            />
-            <LanguageToggle onDark />
+          <View
+            style={{ position: 'absolute', inset: 0, backgroundColor: UI.ink, opacity: 0.55 }}
+          />
+          <View
+            style={[
+              layout.content,
+              {
+                flex: 1,
+                justifyContent: 'space-between',
+                paddingTop: insets.top + 20,
+                gap: 60,
+                paddingBottom: 32,
+              },
+            ]}
+          >
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 8,
+              }}
+            >
+              <NomadaLingoWordmark
+                size={24}
+                tint={UI.onDark}
+                pinFill={UI.tealLight}
+                style={{ flexShrink: 1 }}
+              />
+              <LanguageToggle onDark />
+            </View>
+            <View style={{ gap: 16 }}>
+              <Heading size={wide ? 54 : mode ? 34 : width < 360 ? 38 : 46} light>
+                {es ? 'Dos idiomas.\nUn coro.' : 'Two languages.\nOne community.'}
+              </Heading>
+              <Copy light size={17}>
+                {es
+                  ? 'Gente real. Conversaciones en Punta Cana.'
+                  : 'Real people. Conversations in Punta Cana.'}
+              </Copy>
+            </View>
           </View>
-
-          <View className="gap-7 pt-32">
-            <View className="gap-3">
-              <Typography.Heading
-                className="web:text-4xl max-w-xl text-3xl leading-tight text-white"
-                style={styles.hero}
-                type="h1"
-              >
-                {copy.headline}
-              </Typography.Heading>
-              <Typography style={styles.tagline}>{copy.tagline}</Typography>
-            </View>
-
-            <View className="flex-row items-start gap-5 pl-4">
-              {copy.stats.map(([value, label], index) => (
-                <View key={label} className="flex-row items-center gap-5">
-                  {index > 0 ? <View className="size-1 rounded-full bg-white/40" /> : null}
-                  <View className="items-center">
-                    <Typography style={styles.statValue}>{value}</Typography>
-                    <Typography style={styles.statLabel}>{label}</Typography>
-                  </View>
-                </View>
-              ))}
-            </View>
-
+        </ImageBackground>
+        <View
+          style={{
+            backgroundColor: UI.background,
+            borderTopLeftRadius: wide ? 0 : 32,
+            borderTopRightRadius: wide ? 0 : 32,
+            marginTop: wide ? 0 : -16,
+            flex: wide ? 1 : undefined,
+            justifyContent: wide ? 'center' : undefined,
+          }}
+        >
+          <Animated.View
+            key={mode || 'welcome'}
+            entering={FadeIn.duration(160)}
+            exiting={FadeOut.duration(100)}
+            style={[
+              layout.content,
+              {
+                maxWidth: wide ? 440 : 760,
+                paddingTop: 30,
+                paddingBottom: insets.bottom + 26,
+                gap: 18,
+              },
+            ]}
+          >
+            <Heading size={27}>
+              {mode
+                ? mode === 'signup'
+                  ? es
+                    ? 'Crea tu cuenta'
+                    : 'Create your account'
+                  : es
+                    ? 'Qué bueno verte'
+                    : 'Welcome back'
+                : es
+                  ? 'Tu comunidad te espera'
+                  : 'Find your community'}
+            </Heading>
             {mode ? (
-              <View className="gap-4 rounded-3xl border p-5" style={styles.formPanel}>
-                <Typography.Heading style={styles.formTitle} type="h3">
-                  {mode === 'signup' ? copy.signupTitle : copy.signinTitle}
-                </Typography.Heading>
-                <TextField>
-                  <Label>
-                    <Label.Text style={styles.fieldLabel}>{copy.email}</Label.Text>
-                  </Label>
+              <>
+                <TextField isInvalid={Boolean(error)}>
+                  <Label>{es ? 'Correo electrónico' : 'Email address'}</Label>
                   <Input
                     autoCapitalize="none"
                     autoComplete="email"
                     keyboardType="email-address"
-                    placeholder={copy.emailPlaceholder}
+                    placeholder={es ? 'tu@correo.com' : 'you@email.com'}
                     value={email}
                     onChangeText={setEmail}
+                    style={{ minHeight: 56, borderRadius: 16, fontFamily: BRAND_FONTS.body }}
+                    onSubmitEditing={() => void submit()}
                   />
+                  {error ? <FieldError>{error}</FieldError> : null}
                 </TextField>
-                {error ? <FieldError>{error}</FieldError> : null}
-                <Button
-                  className="h-14"
-                  style={styles.primaryButton}
-                  isDisabled={isSubmitting || !email.trim()}
+                <Action
+                  label={
+                    isSubmitting
+                      ? es
+                        ? 'Enviando…'
+                        : 'Sending…'
+                      : es
+                        ? 'Recibir código'
+                        : 'Send code'
+                  }
+                  icon={Mail}
+                  disabled={isSubmitting || !email.trim()}
                   onPress={() => void submit()}
-                >
-                  <Button.Label style={styles.primaryButtonLabel}>
-                    {isSubmitting ? copy.sending : copy.send}
-                  </Button.Label>
-                </Button>
-                <Button variant="ghost" onPress={() => setMode(null)}>
-                  <Button.Label style={styles.ghostButtonLabel}>{copy.back}</Button.Label>
-                </Button>
-              </View>
+                />
+                <Action
+                  ghost
+                  label={es ? 'Volver' : 'Back'}
+                  onPress={() => choose(null)}
+                  disabled={isSubmitting}
+                />
+              </>
             ) : (
-              <View className="gap-3">
-                <Button
-                  className="h-14 rounded-2xl"
-                  style={styles.primaryButton}
-                  onPress={() => setMode('signup')}
-                >
-                  <Button.Label style={styles.primaryButtonLabel}>{copy.create}</Button.Label>
-                </Button>
-                <Button
-                  className="h-14 rounded-2xl border border-white/40 bg-white/5"
-                  variant="outline"
-                  isDisabled={Boolean(socialProvider)}
-                  onPress={() => setMode('signin')}
-                >
-                  <Button.Label style={styles.secondaryButtonLabel}>{copy.signIn}</Button.Label>
-                </Button>
+              <>
+                <Action
+                  label={es ? 'Crear cuenta' : 'Create account'}
+                  icon={ArrowRight}
+                  onPress={() => choose('signup')}
+                />
+                <Action
+                  secondary
+                  label={es ? 'Ya tengo cuenta' : 'I have an account'}
+                  disabled={Boolean(socialProvider)}
+                  onPress={() => choose('signin')}
+                />
                 {Platform.OS === 'ios' ? (
                   <Button
-                    className="h-14 rounded-2xl border border-white/40 bg-white/5"
                     variant="outline"
                     isDisabled={Boolean(socialProvider)}
                     onPress={() => void submitApple()}
+                    style={{ minHeight: 54, borderRadius: 18 }}
                   >
-                    <Button.Label style={styles.secondaryButtonLabel}>
-                      {socialProvider === 'apple' ? copy.connecting : copy.apple}
+                    <Button.Label style={{ fontFamily: BRAND_FONTS.bold }}>
+                      {socialProvider
+                        ? es
+                          ? 'Conectando…'
+                          : 'Connecting…'
+                        : es
+                          ? 'Continuar con Apple'
+                          : 'Continue with Apple'}
                     </Button.Label>
                   </Button>
                 ) : null}
                 {error ? <FieldError>{error}</FieldError> : null}
-              </View>
+              </>
             )}
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </ImageBackground>
+          </Animated.View>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
-
-const styles = StyleSheet.create({
-  wordmark: {
-    flexShrink: 1,
-  },
-  hero: {
-    fontFamily: BRAND_FONTS.display,
-    color: BRAND_COLORS.onDark,
-    letterSpacing: -1,
-  },
-  tagline: {
-    fontFamily: BRAND_FONTS.bold,
-    fontSize: 16,
-    lineHeight: 22,
-    color: BRAND_COLORS.gold,
-  },
-  statValue: {
-    fontFamily: BRAND_FONTS.heavy,
-    fontSize: 20,
-    lineHeight: 25,
-    color: BRAND_COLORS.onDark,
-    fontVariant: ['tabular-nums'],
-  },
-  statLabel: {
-    fontFamily: BRAND_FONTS.medium,
-    fontSize: 12,
-    lineHeight: 17,
-    color: BRAND_COLORS.onDarkMuted,
-  },
-  formPanel: {
-    backgroundColor: BRAND_COLORS.panel,
-    borderColor: BRAND_COLORS.panelBorder,
-  },
-  formTitle: {
-    fontFamily: BRAND_FONTS.display,
-    fontSize: 21,
-    lineHeight: 25,
-    color: BRAND_COLORS.onDark,
-  },
-  fieldLabel: {
-    fontFamily: BRAND_FONTS.medium,
-    color: BRAND_COLORS.onDarkMuted,
-  },
-  primaryButton: {
-    backgroundColor: BRAND_COLORS.tealDarker,
-  },
-  primaryButtonLabel: {
-    fontFamily: BRAND_FONTS.bold,
-    fontSize: 16,
-    color: BRAND_COLORS.onDark,
-  },
-  secondaryButtonLabel: {
-    fontFamily: BRAND_FONTS.bold,
-    fontSize: 16,
-    color: BRAND_COLORS.onDark,
-  },
-  ghostButtonLabel: {
-    fontFamily: BRAND_FONTS.medium,
-    color: BRAND_COLORS.onDark,
-  },
-});
