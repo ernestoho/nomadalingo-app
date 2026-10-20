@@ -3,6 +3,7 @@ import '../global.css';
 
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { BricolageGrotesque_700Bold } from '@expo-google-fonts/bricolage-grotesque';
+import { KaushanScript_400Regular } from '@expo-google-fonts/kaushan-script';
 import {
   PlusJakartaSans_400Regular,
   PlusJakartaSans_600SemiBold,
@@ -58,6 +59,7 @@ export default function RootLayout() {
   const segments = useSegments();
   const isLaunchRoute = !segments[0];
   const [loaded, error] = useFonts({
+    KaushanScript_400Regular,
     BricolageGrotesque_700Bold,
     PlusJakartaSans_400Regular,
     PlusJakartaSans_600SemiBold,
