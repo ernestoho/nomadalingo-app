@@ -50,8 +50,8 @@ export default function InboxScreen() {
   const incoming = (requestQuery.data || []).filter(
     (request) => request.recipient_id === user?.id && request.status === 'pending',
   );
-  const error = requestQuery.error || conversationQuery.error || peopleQuery.error;
-  const loading = requestQuery.isLoading || conversationQuery.isLoading || peopleQuery.isLoading;
+  const error = requestQuery.error || conversationQuery.error;
+  const loading = requestQuery.isLoading || conversationQuery.isLoading;
   const pending = acceptRequest.isPending || declineRequest.isPending;
   const act = async (id: string, accept: boolean) => {
     setActionError('');
@@ -112,6 +112,13 @@ export default function InboxScreen() {
               }
               actionLabel={es ? 'Reintentar' : 'Retry'}
               onAction={() => void refresh()}
+            />
+          ) : peopleQuery.error ? (
+            <StateView
+              error
+              message={`${es ? 'No se pudieron cargar los perfiles.' : 'Could not load the profiles.'} ${peopleQuery.error.message}`}
+              actionLabel={es ? 'Reintentar' : 'Retry'}
+              onAction={() => void refetchPeople()}
             />
           ) : null}
         </View>

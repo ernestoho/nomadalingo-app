@@ -51,12 +51,9 @@ export default function ChatScreen() {
       ? conversation?.participant_high_id
       : conversation?.participant_low_id;
   const person = peopleQuery.data?.find((profile) => profile.id === otherId);
-  const queryError = conversationQuery.error || peopleQuery.error || messageQuery.error;
-  const queryLoading =
-    conversationQuery.isLoading || peopleQuery.isLoading || messageQuery.isLoading;
-  const retrying =
-    Boolean(queryError) &&
-    (conversationQuery.isFetching || peopleQuery.isFetching || messageQuery.isFetching);
+  const queryError = conversationQuery.error || messageQuery.error;
+  const queryLoading = conversationQuery.isLoading || messageQuery.isLoading;
+  const retrying = Boolean(queryError) && (conversationQuery.isFetching || messageQuery.isFetching);
   const canSend = Boolean(conversation) && !queryLoading && !queryError;
   const send = async () => {
     const text = body.trim();
@@ -129,6 +126,16 @@ export default function ChatScreen() {
           onContentSizeChange={() => {
             if (canSend) listRef.current?.scrollToEnd({ animated: !reducedMotion });
           }}
+          ListHeaderComponent={
+            peopleQuery.error && canSend ? (
+              <StateView
+                error
+                message={`${es ? 'No se pudo cargar el perfil.' : 'Could not load the profile.'} ${peopleQuery.error.message}`}
+                actionLabel={es ? 'Reintentar' : 'Retry'}
+                onAction={() => void refetchPeople()}
+              />
+            ) : null
+          }
           ListEmptyComponent={
             <StateView
               loading={queryLoading || retrying}

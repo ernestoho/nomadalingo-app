@@ -14,11 +14,12 @@ export default function ProfileScreen() {
   const { user } = useAuth();
   const { language } = useI18n();
   const es = language === 'es';
-  const { data: profile, isLoading, error, refetch } = useProfile(user?.id);
+  const { data: profile, isLoading, isRefetching, error, refetch } = useProfile(user?.id);
   useRefreshOnFocus(refetch);
   return (
     <AppScreen
       title={es ? 'Tu perfil' : 'Your profile'}
+      refreshing={isRefetching}
       onRefresh={() => void refetch()}
       action={
         <Button
