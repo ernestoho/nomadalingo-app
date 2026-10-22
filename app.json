@@ -1,0 +1,63 @@
+{
+  "expo": {
+    "name": "NómadaLingo",
+    "slug": "nomadalingo",
+    "version": "1.0.0",
+    "sdkVersion": "57.0.0",
+    "platforms": ["ios", "android", "web"],
+    "orientation": "portrait",
+    "icon": "./assets/images/native-brand/icon.png",
+    "userInterfaceStyle": "light",
+    "scheme": "nomadalingo",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "usesAppleSignIn": true,
+      "supportsTablet": true,
+      "bundleIdentifier": "com.nomadalingo.app",
+      "config": {
+        "usesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "com.nomadalingo.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#FDF8F1",
+        "foregroundImage": "./assets/images/native-brand/adaptive-foreground.png",
+        "monochromeImage": "./assets/images/native-brand/adaptive-monochrome.png"
+      }
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "favicon": "./public/icons/icon-192.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "fea367cc-b109-49d4-98d7-a26d5987a04f"
+      }
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#FDF8F1",
+          "image": "./assets/images/native-brand/splash.png",
+          "imageWidth": 190,
+          "resizeMode": "contain"
+        }
+      ],
+      "expo-status-bar",
+      "expo-font",
+      "expo-secure-store",
+      "expo-apple-authentication"
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
+  }
+}
