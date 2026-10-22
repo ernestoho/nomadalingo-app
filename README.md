@@ -1,158 +1,135 @@
-# Welcome to your Bilt project
+# NómadaLingo
 
-[![Built with Bilt](https://img.shields.io/endpoint?url=https%3A%2F%2Fapp.bilt.me%2Fapi%2Fbadge)](https://bilt.me)
+A social app for nomads to meet people, discover events, and chat — built with Expo.
 
-## Project info
+Available in **Spanish** and **English**.
 
-**Project URL**: https://app.bilt.me/agent/fc29cee6-d531-493f-82ae-87048a1b1f0b
+## Features
 
-**Project ID**: `fc29cee6-d531-493f-82ae-87048a1b1f0b`
+- **Home** — a feed of what's happening around you
+- **Events** — browse and open event details
+- **People** — discover other nomads and view profiles
+- **Inbox** — direct messages with a per-conversation chat screen
+- **Profile** — edit your profile, manage privacy, delete your account
+- **Auth** — email sign-in with verification, plus Sign in with Apple on iOS
+- **Onboarding** — guided first-run setup
+- **Installable web app** — PWA build with offline support
 
-## How can I edit this app?
+## Tech stack
 
-There are several ways of editing your application.
+| Area | Choice |
+| --- | --- |
+| Framework | Expo SDK 57 / React Native 0.86 |
+| Routing | Expo Router (file-based, typed routes) |
+| Language | TypeScript |
+| Styling | uniwind (Tailwind CSS v4 for React Native) + HeroUI Native |
+| Data | TanStack Query + Zustand |
+| Backend | `@biltme/backend` (auth + Postgres-backed data) |
+| Maps | `react-native-maps` on native, `pigeon-maps` on web |
+| Analytics | PostHog (web) |
 
-**Use Bilt**
-
-Simply visit your [Bilt Project](https://app.bilt.me/agent/fc29cee6-d531-493f-82ae-87048a1b1f0b) and start sending messages. Describe what you want to change, add, or fix in natural language.
-
-Changes made via Bilt are instant - just send a message and your app updates.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can export the source code from Bilt and make changes directly.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Export and clone your Bilt project.
-# (Download source from Bilt or connect to your git repo)
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm install
-
-# Step 4: Start the Expo development server.
-npx expo start
-```
-
-Scan the QR code with Expo Go on your phone to see your app running locally.
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- React Native
-- Expo
-- TypeScript
-- AsyncStorage (local data persistence)
-- Expo Router (navigation)
-
-All generated automatically by Bilt from your natural language instructions.
-
-## How can I test this project?
-
-**Option 1: Preview in Bilt (Recommended)**
-
-Open your [Bilt Project](https://app.bilt.me/agent/fc29cee6-d531-493f-82ae-87048a1b1f0b) and use the built-in preview.
-
-Open **Deploy & Share** to create a revocable preview link or build the app on your iPhone.
-
-**Option 2: Run Locally**
+## Getting started
 
 ```sh
 npm install
 npx expo start
 ```
 
-Then scan the QR code with Expo Go.
+### Environment variables
 
-## How can I deploy this project?
+The app talks to a hosted backend and needs two public values. Create a `.env`
+file in the project root:
 
-Open your [Bilt Project](https://app.bilt.me/agent/fc29cee6-d531-493f-82ae-87048a1b1f0b), select **Deploy & Share**, then choose **Publish to web**, **Release on App Store**, or **Release on Play Store**.
-
-### Deploy with Bilt
-
-Publishing to web creates a public, installable web app at its own URL. Bilt also guides you through preparing native releases for the App Store and Play Store.
-
-## How can I make changes to my app?
-
-**Via Bilt (Easiest)**
-
-Visit your [Bilt Project](https://app.bilt.me/agent/fc29cee6-d531-493f-82ae-87048a1b1f0b) and send a message describing what you want:
-
-- "Add a dark mode toggle"
-- "Change the button color to blue"
-- "Add a new screen for user settings"
-- "Fix the navigation bar spacing"
-
-Bilt understands natural language and updates your app automatically.
-
-**Via Code**
-
-Export the source, make changes in your IDE, and test locally with `npx expo start`.
-
-## Can I use this with the MCP protocol?
-
-Yes! Bilt is available as a remote MCP server at `https://mcp.bilt.me/mcp`.
-
-Connect any MCP-compatible AI agent (Claude Desktop, OpenClaw, etc.) to programmatically build and modify mobile apps.
-
-**Example MCP integration:**
-
-```json
-{
-  "mcpServers": {
-    "bilt": {
-      "transport": {
-        "type": "sse",
-        "url": "https://mcp.bilt.me/mcp/sse",
-        "headers": {
-          "Authorization": "Bearer YOUR_API_KEY"
-        }
-      }
-    }
-  }
-}
+```sh
+EXPO_PUBLIC_BILT_URL=https://your-project-url
+EXPO_PUBLIC_BILT_ANON_KEY=your-anon-key
 ```
 
-Read more:
+`EXPO_PUBLIC_*` variables are inlined into the bundle at build time, so they must
+be present both locally and in the EAS environment used for production builds.
 
-- [Bilt MCP Documentation](https://bilt.me/docs)
-- [MCP Registry](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.buildingapplications%2Fmcp/versions/latest)
+Set them on EAS with:
 
-## Need help?
+```sh
+eas env:create --name EXPO_PUBLIC_BILT_URL --value "https://..." --environment production --visibility plaintext
+eas env:create --name EXPO_PUBLIC_BILT_ANON_KEY --value "..." --environment production --visibility plaintext
+```
 
-- 📚 [Bilt Documentation](https://bilt.me/docs)
-- 💬 [Discord Community](https://discord.gg/3FqNgmSYdZ)
-- 🐦 [Twitter Updates](https://twitter.com/biltmeanapp)
-- 📧 Email: support@bilt.me
+## Running on a device
 
----
+The project ships a development client (`expo-dev-client`), so native builds can
+load JavaScript from your local Metro server:
 
-<div align="center">
+```sh
+npx expo start --dev-client
+```
 
-**Built by AI. No code required.** ✨
+Build a development client with EAS:
 
-[Try Bilt](https://bilt.me) • [View Docs](https://bilt.me/docs) • [Docs MCP Server](https://bilt.me/docs/mcp)
+```sh
+eas build --profile development --platform ios
+eas build --profile development --platform android
+```
 
-</div>
+## Building and launching
+
+The app uses a **static** `app.json` manifest so that hosted workflows (such as
+Expo Launch) can read and update app settings.
+
+Launch it from GitHub at [launch.expo.dev](https://launch.expo.dev/), or build
+and submit from the CLI:
+
+```sh
+eas build --profile production --platform ios
+eas submit --profile production --platform ios
+```
+
+Build profiles live in `eas.json`:
+
+| Profile | Purpose |
+| --- | --- |
+| `development` | Dev client + internal distribution |
+| `preview` | Internal distribution for testing |
+| `production` | Store builds |
+
+## Web
+
+```sh
+npm run export:web     # static SPA export into dist/
+npm run build:pwa      # export + Workbox service worker for offline support
+```
+
+Deploy the exported bundle to any static host, or to EAS Hosting:
+
+```sh
+npx expo export --platform web
+eas deploy --prod
+```
+
+## Project structure
+
+```
+app/                 Expo Router routes
+  (auth)/            Sign-in, verification, onboarding
+  (tabs)/            Home, Events, People, Inbox, Profile
+  chat/[id].tsx      Conversation
+  event/[id].tsx     Event detail
+  person/[id].tsx    Person detail
+  settings/          Account, privacy, terms, support
+components/          Shared UI
+lib/                 Auth, data access, i18n, analytics, brand tokens
+scripts/             Brand asset generation, CSS linting
+public/              PWA icons and static files
+assets/              Images and generated native brand assets
+```
+
+## Scripts
+
+| Command | Description |
+| --- | --- |
+| `npm start` | Start the Expo dev server |
+| `npm run ios` / `npm run android` | Run a native build locally |
+| `npm run export:web` | Export the web SPA |
+| `npm run build:pwa` | Export web + generate the service worker |
+| `npm run lint` | Lint with oxlint (type-aware) |
+| `npm run format` | Format with oxfmt |
