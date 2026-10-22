@@ -55,6 +55,9 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     },
     extra: {
       appStoreAppId: process.env.BILT_APP_STORE_APP_ID,
+      eas: {
+        projectId: 'fea367cc-b109-49d4-98d7-a26d5987a04f',
+      },
     },
     plugins: [
       'expo-router',
