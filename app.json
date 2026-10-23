@@ -1,10 +1,15 @@
 {
   "expo": {
     "name": "NómadaLingo",
-    "slug": "nomadalingo",
+    "slug": "nomadalingoapp",
+    "owner": "ernexto",
     "version": "1.0.0",
     "sdkVersion": "57.0.0",
-    "platforms": ["ios", "android", "web"],
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
     "orientation": "portrait",
     "icon": "./assets/images/native-brand/icon.png",
     "userInterfaceStyle": "light",
@@ -12,7 +17,9 @@
     "runtimeVersion": {
       "policy": "appVersion"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "usesAppleSignIn": true,
       "supportsTablet": true,
@@ -34,11 +41,6 @@
       "output": "single",
       "favicon": "./public/icons/icon-192.png"
     },
-    "extra": {
-      "eas": {
-        "projectId": "fea367cc-b109-49d4-98d7-a26d5987a04f"
-      }
-    },
     "plugins": [
       "expo-router",
       [
@@ -58,6 +60,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "6f82340f-78e3-4f89-9273-2feb038a1053"
+      }
     }
   }
 }

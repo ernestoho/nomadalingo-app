@@ -26,7 +26,9 @@ import {
 } from 'expo-router';
 
 import { AuthRouteGuard } from '@/components/AuthRouteGuard';
+import { BackendConfigRequired } from '@/components/BackendConfigRequired';
 import { AuthProvider } from '@/lib/auth';
+import { isBackendConfigured, missingBackendEnvVars } from '@/lib/backend';
 import { DataProvider } from '@/lib/data-provider';
 import { I18nProvider } from '@/lib/i18n';
 import { initPostHog } from '@/lib/posthog';
@@ -143,6 +145,10 @@ export default function RootLayout() {
 
   if (!loaded && !error) {
     return null;
+  }
+
+  if (!isBackendConfigured) {
+    return <BackendConfigRequired missing={missingBackendEnvVars} />;
   }
 
   return (
