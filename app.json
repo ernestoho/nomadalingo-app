@@ -22,14 +22,14 @@
     ],
     "ios": {
       "usesAppleSignIn": true,
-      "supportsTablet": true,
-      "bundleIdentifier": "com.nomadalingo.app",
+      "supportsTablet": false,
+      "bundleIdentifier": "com.ernestoho.nomadalingo",
       "config": {
         "usesNonExemptEncryption": false
       }
     },
     "android": {
-      "package": "com.nomadalingo.app",
+      "package": "com.ernestoho.nomadalingo",
       "adaptiveIcon": {
         "backgroundColor": "#FDF8F1",
         "foregroundImage": "./assets/images/native-brand/adaptive-foreground.png",

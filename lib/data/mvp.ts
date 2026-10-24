@@ -1,7 +1,7 @@
-import type { Enums, Tables } from '@biltme/backend';
+import type { Enums, Tables } from '@/lib/database.types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { bilt } from '@/lib/backend';
+import { supabase } from '@/lib/backend';
 
 export type Profile = Tables<'profiles'>;
 export type Event = Tables<'events'>;
@@ -18,7 +18,7 @@ export function useProfile(userId?: string) {
     queryKey: ['profile', userId],
     enabled: Boolean(userId),
     queryFn: async () => {
-      const { data, error } = await bilt
+      const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId!)
@@ -33,7 +33,7 @@ export function useEvents() {
   return useQuery({
     queryKey: ['events'],
     queryFn: async () => {
-      const { data, error } = await bilt
+      const { data, error } = await supabase
         .from('events')
         .select('*')
         .eq('published', true)
@@ -49,7 +49,7 @@ export function useMyRsvps(userId?: string) {
     queryKey: ['rsvps', userId],
     enabled: Boolean(userId),
     queryFn: async () => {
-      const { data, error } = await bilt.from('event_rsvps').select('*').eq('user_id', userId!);
+      const { data, error } = await supabase.from('event_rsvps').select('*').eq('user_id', userId!);
       throwIfError(error);
       return data ?? [];
     },
@@ -61,7 +61,7 @@ export function usePeople(userId?: string) {
     queryKey: ['people', userId],
     enabled: Boolean(userId),
     queryFn: async () => {
-      const { data, error } = await bilt
+      const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .neq('id', userId!)
@@ -78,7 +78,7 @@ export function useChatRequests(userId?: string) {
     queryKey: ['chat-requests', userId],
     enabled: Boolean(userId),
     queryFn: async () => {
-      const { data, error } = await bilt
+      const { data, error } = await supabase
         .from('chat_requests')
         .select('*')
         .or(`sender_id.eq.${userId},recipient_id.eq.${userId}`)
@@ -94,7 +94,7 @@ export function useConversations(userId?: string) {
     queryKey: ['conversations', userId],
     enabled: Boolean(userId),
     queryFn: async () => {
-      const { data, error } = await bilt
+      const { data, error } = await supabase
         .from('conversations')
         .select('*')
         .or(`participant_low_id.eq.${userId},participant_high_id.eq.${userId}`)
@@ -115,7 +115,7 @@ export function useMessages(userId?: string, conversationId?: string) {
       const pageSize = 1000;
       let offset = 0;
       while (true) {
-        const { data, error } = await bilt
+        const { data, error } = await supabase
           .from('messages')
           .select('*')
           .eq('conversation_id', conversationId!)
@@ -148,28 +148,28 @@ export function useMvpActions() {
         adult_confirmed_at: string | null;
         onboarding_completed_at: string | null;
       }) => {
-        const { error } = await bilt.from('profiles').upsert(profile);
+        const { error } = await supabase.from('profiles').upsert(profile);
         throwIfError(error);
       },
       onSuccess: refresh,
     }),
     joinEvent: useMutation({
       mutationFn: async (eventId: string) => {
-        const { error } = await bilt.rpc('join_event', { target_event_id: eventId });
+        const { error } = await supabase.rpc('join_event', { target_event_id: eventId });
         throwIfError(error);
       },
       onSuccess: refresh,
     }),
     cancelRsvp: useMutation({
       mutationFn: async (eventId: string) => {
-        const { error } = await bilt.rpc('cancel_event_rsvp', { target_event_id: eventId });
+        const { error } = await supabase.rpc('cancel_event_rsvp', { target_event_id: eventId });
         throwIfError(error);
       },
       onSuccess: refresh,
     }),
     requestChat: useMutation({
       mutationFn: async (recipientId: string) => {
-        const { data, error } = await bilt.rpc('create_chat_request', {
+        const { data, error } = await supabase.rpc('create_chat_request', {
           target_recipient_id: recipientId,
         });
         throwIfError(error);
@@ -179,7 +179,7 @@ export function useMvpActions() {
     }),
     acceptRequest: useMutation({
       mutationFn: async (requestId: string) => {
-        const { data, error } = await bilt.rpc('accept_chat_request', {
+        const { data, error } = await supabase.rpc('accept_chat_request', {
           target_request_id: requestId,
         });
         throwIfError(error);
@@ -189,7 +189,7 @@ export function useMvpActions() {
     }),
     declineRequest: useMutation({
       mutationFn: async (requestId: string) => {
-        const { error } = await bilt.rpc('decline_chat_request', {
+        const { error } = await supabase.rpc('decline_chat_request', {
           target_request_id: requestId,
         });
         throwIfError(error);
@@ -203,14 +203,14 @@ export function useMvpActions() {
         client_id: string;
         body: string;
       }) => {
-        const { error } = await bilt.from('messages').insert(input);
+        const { error } = await supabase.from('messages').insert(input);
         throwIfError(error);
       },
       onSuccess: refresh,
     }),
     blockUser: useMutation({
       mutationFn: async (userId: string) => {
-        const { error } = await bilt.rpc('block_user', { target_user_id: userId });
+        const { error } = await supabase.rpc('block_user', { target_user_id: userId });
         throwIfError(error);
       },
       onSuccess: refresh,
@@ -223,7 +223,7 @@ export function useMvpActions() {
         details?: string;
         message_id?: string;
       }) => {
-        const { error } = await bilt.from('reports').insert(input);
+        const { error } = await supabase.from('reports').insert(input);
         throwIfError(error);
       },
       onSuccess: refresh,

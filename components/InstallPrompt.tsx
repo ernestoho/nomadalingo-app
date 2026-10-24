@@ -17,8 +17,7 @@ import * as Haptics from 'expo-haptics';
  * - iOS/Safari: no programmatic prompt exists, so shows a one-time
  *   "Share → Add to Home Screen" hint (dismissal persisted).
  *
- * Hidden when already installed (standalone display mode) and inside iframes
- * (the Bilt live preview embeds the app in one).
+ * Hidden when already installed (standalone display mode) and inside iframes.
  */
 
 // Chrome's install event — not yet in lib.dom.
@@ -42,7 +41,7 @@ function isEligibleBrowserContext(): boolean {
     window.matchMedia('(display-mode: standalone)').matches ||
     Reflect.get(navigator, 'standalone') === true;
   if (standalone) return false;
-  // Embedded (e.g. the Bilt live preview iframe) — installing isn't possible there.
+  // Embedded — installing isn't possible inside an iframe.
   if (window.self !== window.top) return false;
   return true;
 }
@@ -61,7 +60,7 @@ const TAB_BAR_HEIGHT = 49;
 export function InstallPrompt() {
   const { language } = useI18n();
   const es = language === 'es';
-  const segments = useSegments();
+  const segments = useSegments() as string[];
   const [installing, setInstalling] = useState(false);
   const [installError, setInstallError] = useState('');
   const [installEvent, setInstallEvent] = useState<BeforeInstallPromptEvent | null>(null);

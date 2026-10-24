@@ -9,7 +9,7 @@ import { useProfile } from '@/lib/data/mvp';
 const PRIVATE_ROUTE_ROOTS = new Set(['(tabs)', 'chat', 'event', 'person', 'settings']);
 
 export function AuthRouteGuard({ children }: PropsWithChildren) {
-  const segments = useSegments();
+  const segments = useSegments() as string[];
   const { isLoading, user } = useAuth();
   const { language } = useI18n();
   const es = language === 'es';

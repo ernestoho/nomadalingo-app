@@ -17,42 +17,18 @@ import { useEffect } from 'react';
 import * as DevClient from 'expo-dev-client';
 import { HeroUINativeProvider } from 'heroui-native';
 import { Uniwind } from 'uniwind';
-import {
-  ErrorBoundary as ExpoErrorBoundary,
-  type ErrorBoundaryProps,
-  SplashScreen,
-  Stack,
-  useSegments,
-} from 'expo-router';
+import { SplashScreen, Stack, useSegments } from 'expo-router';
 
 import { AuthRouteGuard } from '@/components/AuthRouteGuard';
 import { BackendConfigRequired } from '@/components/BackendConfigRequired';
+import { InstallPrompt } from '@/components/InstallPrompt';
 import { AuthProvider } from '@/lib/auth';
 import { isBackendConfigured, missingBackendEnvVars } from '@/lib/backend';
 import { DataProvider } from '@/lib/data-provider';
 import { I18nProvider } from '@/lib/i18n';
-import { initPostHog } from '@/lib/posthog';
 import { registerServiceWorker } from '@/lib/registerServiceWorker';
-import { reportErrorToParent } from '@/lib/reportPreviewError';
-import { InstallPrompt } from '@/components/InstallPrompt';
 
-/**
- * Custom ErrorBoundary that reports React render errors to the parent window (Bilt preview iframe)
- * and then renders the default Expo error UI.
- */
-function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
-  useEffect(() => {
-    if (Platform.OS === 'web' && error) {
-      const message = [error.message, error.stack].filter(Boolean).join('\n');
-      reportErrorToParent(message);
-    }
-  }, [error]);
-  return <ExpoErrorBoundary error={error} retry={retry} />;
-}
-
-export { ErrorBoundary };
-
-// Starter is light-only by default. Remove this when implementing requested dark mode.
+// The app is light-only.
 Uniwind.setTheme('light');
 
 void SplashScreen.preventAutoHideAsync();
@@ -69,35 +45,10 @@ export default function RootLayout() {
     PlusJakartaSans_800ExtraBold,
   });
 
-  // Report uncaught JS errors and unhandled promise rejections to parent (Bilt preview iframe)
-  useEffect(() => {
-    if (Platform.OS !== 'web' || typeof window === 'undefined') return undefined;
-
-    const handleError = (event: ErrorEvent) => {
-      const message = event.error?.stack ?? event.message ?? 'Unknown error';
-      reportErrorToParent(message);
-    };
-
-    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
-      const err = event.reason;
-      const message =
-        err instanceof Error ? [err.message, err.stack].filter(Boolean).join('\n') : String(err);
-      reportErrorToParent(message);
-    };
-
-    window.addEventListener('error', handleError);
-    window.addEventListener('unhandledrejection', handleUnhandledRejection);
-    return () => {
-      window.removeEventListener('error', handleError);
-      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
-    };
-  }, []);
-
-  // Inject Google Fonts link tag for web to ensure fonts load through proxy
-  // Also register font family names as fallback if expo-font fails
+  // Inject Google Fonts link tag for web so the bundled families have a
+  // network fallback if expo-font is slow to apply them.
   useEffect(() => {
     if (Platform.OS === 'web') {
-      // Check if link already exists
       const existingLink = document.querySelector(
         'link[href*="fonts.googleapis.com/css2?family=Bricolage"]',
       );
@@ -125,12 +76,6 @@ export default function RootLayout() {
       return () => clearTimeout(timer);
     }
     return undefined;
-  }, []);
-
-  useEffect(() => {
-    if (Platform.OS === 'web') {
-      initPostHog();
-    }
   }, []);
 
   useEffect(() => {

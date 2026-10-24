@@ -24,7 +24,7 @@ Available in **Spanish** and **English**.
 | Language | TypeScript |
 | Styling | uniwind (Tailwind CSS v4 for React Native) + HeroUI Native |
 | Data | TanStack Query + Zustand |
-| Backend | `@biltme/backend` (auth + Postgres-backed data) |
+| Backend | Supabase (`@supabase/supabase-js`) |
 | Maps | `react-native-maps` on native, `pigeon-maps` on web |
 | Analytics | PostHog (web) |
 
@@ -37,12 +37,12 @@ npx expo start
 
 ### Environment variables
 
-The app talks to a hosted backend and needs two public values. Create a `.env`
-file in the project root:
+The app talks to Supabase and needs two public values. Create a `.env` file in
+the project root:
 
 ```sh
-EXPO_PUBLIC_BILT_URL=https://your-project-url
-EXPO_PUBLIC_BILT_ANON_KEY=your-anon-key
+EXPO_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
+EXPO_PUBLIC_SUPABASE_ANON_KEY=your-publishable-anon-key
 ```
 
 `EXPO_PUBLIC_*` variables are inlined into the bundle at build time, so they must
@@ -51,9 +51,27 @@ be present both locally and in the EAS environment used for production builds.
 Set them on EAS with:
 
 ```sh
-eas env:create --name EXPO_PUBLIC_BILT_URL --value "https://..." --environment production --visibility plaintext
-eas env:create --name EXPO_PUBLIC_BILT_ANON_KEY --value "..." --environment production --visibility plaintext
+eas env:set --name EXPO_PUBLIC_SUPABASE_URL --value "https://..." --environment production --visibility plaintext
+eas env:set --name EXPO_PUBLIC_SUPABASE_ANON_KEY --value "..." --environment production --visibility sensitive
 ```
+
+## Backend
+
+The database schema, row-level security policies, triggers and RPCs live in
+`supabase/migrations/`. Apply them to a Supabase project with:
+
+```sh
+supabase link --project-ref <ref>
+supabase db push
+```
+
+Account deletion runs as an Edge Function (required by the App Store):
+
+```sh
+supabase functions deploy delete-account
+```
+
+Events and member profiles are managed in the Supabase Table Editor.
 
 ## Running on a device
 

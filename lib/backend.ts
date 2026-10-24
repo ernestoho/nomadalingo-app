@@ -1,16 +1,18 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { asyncStorage, createClient } from '@biltme/backend';
+import { createClient } from '@supabase/supabase-js';
 
-const backendUrl = process.env.EXPO_PUBLIC_BILT_URL;
-const backendKey = process.env.EXPO_PUBLIC_BILT_ANON_KEY;
+import type { Database } from '@/lib/database.types';
+
+const backendUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
+const backendKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 
 /**
  * Names of the backend values that are not present in this build.
  * Exported so the root layout can explain the problem instead of crashing.
  */
 export const missingBackendEnvVars = [
-  !backendUrl && 'EXPO_PUBLIC_BILT_URL',
-  !backendKey && 'EXPO_PUBLIC_BILT_ANON_KEY',
+  !backendUrl && 'EXPO_PUBLIC_SUPABASE_URL',
+  !backendKey && 'EXPO_PUBLIC_SUPABASE_ANON_KEY',
 ].filter((name): name is string => Boolean(name));
 
 export const isBackendConfigured = missingBackendEnvVars.length === 0;
@@ -22,12 +24,20 @@ export const isBackendConfigured = missingBackendEnvVars.length === 0;
 const FALLBACK_URL = 'https://backend-not-configured.invalid';
 const FALLBACK_KEY = 'backend-not-configured';
 
-export const bilt = createClient(backendUrl ?? FALLBACK_URL, backendKey ?? FALLBACK_KEY, {
-  auth: {
-    storage: asyncStorage(AsyncStorage),
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: false,
-    flowType: 'pkce',
+export const supabase = createClient<Database>(
+  backendUrl ?? FALLBACK_URL,
+  backendKey ?? FALLBACK_KEY,
+  {
+    auth: {
+      storage: {
+        getItem: (key) => AsyncStorage.getItem(key),
+        setItem: (key, value) => AsyncStorage.setItem(key, value),
+        removeItem: (key) => AsyncStorage.removeItem(key),
+      },
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: false,
+      flowType: 'pkce',
+    },
   },
-});
+);

@@ -1,0 +1,75 @@
+{
+  "configVersion": 0,
+  "apple": {
+    "copyright": "2026 NómadaLingo",
+    "categories": ["SOCIAL_NETWORKING", "TRAVEL"],
+    "advisory": {
+      "alcoholTobaccoOrDrugUseOrReferences": "NONE",
+      "contests": "NONE",
+      "gamblingSimulated": "NONE",
+      "horrorOrFearThemes": "NONE",
+      "matureOrSuggestiveThemes": "INFREQUENT_OR_MILD",
+      "medicalOrTreatmentInformation": "NONE",
+      "profanityOrCrudeHumor": "INFREQUENT_OR_MILD",
+      "sexualContentGraphicAndNudity": "NONE",
+      "sexualContentOrNudity": "NONE",
+      "violenceCartoonOrFantasy": "NONE",
+      "violenceRealistic": "NONE",
+      "violenceRealisticProlongedGraphicOrSadistic": "NONE",
+      "gambling": false,
+      "unrestrictedWebAccess": false,
+      "kidsAgeBand": null,
+      "ageRatingOverride": "SEVENTEEN_PLUS",
+      "koreaAgeRatingOverride": "NONE"
+    },
+    "info": {
+      "en-US": {
+        "title": "NómadaLingo",
+        "subtitle": "Meet nomads. Learn languages.",
+        "promoText": "Meet nomads, join local events and practise languages together.",
+        "description": "Meet people, practise languages, and find your community — wherever you land.\n\nNómadaLingo is a social app for digital nomads, travellers and language learners who want real connections instead of another endless feed.\n\nDISCOVER EVENTS\nBrowse meetups, language exchanges, coworking sessions and local activities happening around you. See the details, RSVP in one tap, and know who else is going.\n\nMEET PEOPLE\nExplore profiles of nomads nearby. See the languages each person speaks and the ones they are learning, along with their level and a short introduction.\n\nCHAT SAFELY\nConversations start with a message request and only open when both people accept. You can decline, cancel or report at any time, and block anyone instantly.\n\nBUILT FOR SAFETY\nReport profiles and messages, block users, and delete your account whenever you want. Your email is never shown on your public profile.\n\nAVAILABLE IN SPANISH AND ENGLISH\nSwitch language at any time from the welcome screen or your profile.\n\nWhether you are in Mexico City, Lisbon or Bangkok, NómadaLingo helps you find your people and pick up the local language along the way.",
+        "keywords": [
+          "nomad",
+          "digital nomad",
+          "language exchange",
+          "meet people",
+          "travel",
+          "community",
+          "expat"
+        ],
+        "marketingUrl": "https://nomadalingoapp.expo.app",
+        "supportUrl": "https://nomadalingoapp.expo.app/support.html",
+        "privacyPolicyUrl": "https://nomadalingoapp.expo.app/privacy.html",
+        "privacyChoicesUrl": "https://nomadalingoapp.expo.app/privacy.html"
+      },
+      "es-ES": {
+        "title": "NómadaLingo",
+        "subtitle": "Conecta con nómadas",
+        "promoText": "Conoce nómadas, únete a eventos locales y practica idiomas.",
+        "description": "Conoce gente, practica idiomas y encuentra tu comunidad, estés donde estés.\n\nNómadaLingo es una app social para nómadas digitales, viajeros y personas que aprenden idiomas y quieren conexiones reales.\n\nDESCUBRE EVENTOS\nEncuentra quedadas, intercambios de idiomas, sesiones de coworking y actividades locales cerca de ti. Consulta los detalles, confirma tu asistencia con un toque y mira quién más va.\n\nCONOCE PERSONAS\nExplora perfiles de otros nómadas. Descubre qué idiomas habla cada persona, cuáles está aprendiendo, su nivel y una breve presentación.\n\nCHATEA CON SEGURIDAD\nLas conversaciones empiezan con una solicitud de mensaje y solo se abren cuando ambas personas aceptan. Puedes rechazar, cancelar o reportar en cualquier momento, y bloquear a alguien al instante.\n\nSEGURIDAD DESDE EL DISEÑO\nReporta perfiles y mensajes, bloquea usuarios y elimina tu cuenta cuando quieras. Tu correo nunca aparece en tu perfil público.\n\nDISPONIBLE EN ESPAÑOL E INGLÉS\nCambia de idioma cuando quieras desde la pantalla de bienvenida o tu perfil.\n\nEstés en Ciudad de México, Lisboa o Bangkok, NómadaLingo te ayuda a encontrar a tu gente y aprender el idioma local.",
+        "keywords": [
+          "nómada",
+          "intercambio de idiomas",
+          "conocer gente",
+          "viajar",
+          "comunidad",
+          "expatriados"
+        ],
+        "marketingUrl": "https://nomadalingoapp.expo.app",
+        "supportUrl": "https://nomadalingoapp.expo.app/support.html",
+        "privacyPolicyUrl": "https://nomadalingoapp.expo.app/privacy.html",
+        "privacyChoicesUrl": "https://nomadalingoapp.expo.app/privacy.html"
+      }
+    },
+    "release": {
+      "automaticRelease": false
+    },
+    "review": {
+      "firstName": "Ernesto",
+      "lastName": "Ho",
+      "email": "support@nomadalingo.com",
+      "demoRequired": false,
+      "notes": "NómadaLingo is a community app for digital nomads. The fastest way to review is Sign in with Apple, available on the welcome screen. Email sign-in sends a one-time code to the address you enter. After onboarding, events and member profiles are public content, so a new account can browse immediately. To reach the chat flow, send a message request from any profile; the conversation opens only after the recipient accepts. Reporting, blocking and in-app account deletion are available from Settings."
+    }
+  }
+}

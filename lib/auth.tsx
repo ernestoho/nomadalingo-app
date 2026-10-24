@@ -1,4 +1,4 @@
-import type { Session, User } from '@biltme/backend';
+import type { Session, User } from '@supabase/supabase-js';
 import { useQueryClient } from '@tanstack/react-query';
 import type { AppStateStatus } from 'react-native';
 import { AppState, Platform } from 'react-native';
@@ -13,7 +13,7 @@ import {
   useState,
 } from 'react';
 
-import { bilt } from '@/lib/backend';
+import { supabase } from '@/lib/backend';
 
 type AuthContextValue = {
   isLoading: boolean;
@@ -54,13 +54,13 @@ export function AuthProvider({ children }: PropsWithChildren) {
     let isMounted = true;
     let receivedAuthEvent = false;
 
-    const { data } = bilt.auth.onAuthStateChange((_event, nextSession) => {
+    const { data } = supabase.auth.onAuthStateChange((_event, nextSession) => {
       if (!isMounted) return;
       receivedAuthEvent = true;
       void applySession(nextSession);
     });
 
-    void bilt.auth.getSession().then(({ data: sessionData, error }) => {
+    void supabase.auth.getSession().then(({ data: sessionData, error }) => {
       if (!isMounted || receivedAuthEvent) return;
       if (error) console.warn('Unable to restore the signed-in session.');
       void applySession(sessionData.session);
@@ -76,15 +76,15 @@ export function AuthProvider({ children }: PropsWithChildren) {
     if (Platform.OS === 'web') return undefined;
 
     const updateRefreshState = (state: AppStateStatus) => {
-      if (state === 'active') void bilt.auth.startAutoRefresh();
-      else void bilt.auth.stopAutoRefresh();
+      if (state === 'active') void supabase.auth.startAutoRefresh();
+      else void supabase.auth.stopAutoRefresh();
     };
 
     updateRefreshState(AppState.currentState);
     const subscription = AppState.addEventListener('change', updateRefreshState);
     return () => {
       subscription.remove();
-      void bilt.auth.stopAutoRefresh();
+      void supabase.auth.stopAutoRefresh();
     };
   }, []);
 

@@ -2,7 +2,7 @@ import * as AppleAuthentication from 'expo-apple-authentication';
 import * as Crypto from 'expo-crypto';
 import { Platform } from 'react-native';
 
-import { bilt } from '@/lib/backend';
+import { supabase } from '@/lib/backend';
 
 export async function signInWithApple() {
   if (Platform.OS !== 'ios' || !(await AppleAuthentication.isAvailableAsync())) {
@@ -23,7 +23,7 @@ export async function signInWithApple() {
 
     if (!credential.identityToken) throw new Error('Apple no devolvió una identidad válida.');
 
-    const { error } = await bilt.auth.signInWithIdToken({
+    const { error } = await supabase.auth.signInWithIdToken({
       provider: 'apple',
       token: credential.identityToken,
       nonce,

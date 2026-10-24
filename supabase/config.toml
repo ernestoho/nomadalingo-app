@@ -1,0 +1,28 @@
+# Supabase CLI configuration
+# https://supabase.com/docs/guides/local-development/cli/config
+
+project_id = "nomadalingo"
+
+[api]
+enabled = true
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+major_version = 17
+
+[auth]
+enabled = true
+site_url = "https://nomadalingoapp.expo.app"
+additional_redirect_urls = ["nomadalingo://**", "https://nomadalingoapp.expo.app/**"]
+jwt_expiry = 3600
+enable_signup = true
+
+[auth.email]
+enable_signup = true
+enable_confirmations = false
+
+[functions.delete-account]
+verify_jwt = true
