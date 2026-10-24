@@ -336,12 +336,11 @@ create policy blocks_select on public.blocks
 create policy reports_insert on public.reports
   for insert to authenticated
   with check (
+    -- Reporting a user you previously blocked is still allowed: blocking first
+    -- and reporting afterwards is a normal flow.
     reporter_id = auth.uid()
     and (
-      (reported_user_id is not null and (
-        reported_user_id <> auth.uid()
-        and not public.profiles_are_blocked(reported_user_id)
-      ))
+      (reported_user_id is not null and reported_user_id <> auth.uid())
       or (message_id is not null and public.can_report_message(message_id, reported_user_id))
     )
   );
@@ -718,6 +717,12 @@ $$;
 -- ---------------------------------------------------------------------------
 -- Function grants
 -- ---------------------------------------------------------------------------
+
+-- `create function` grants EXECUTE to PUBLIC by default, which would expose
+-- every RPC to the anon role. Revoke first, then grant only what the app needs.
+revoke execute on all functions in schema public from public, anon;
+
+alter default privileges in schema public revoke execute on functions from public, anon;
 
 grant execute on function public.create_chat_request(uuid) to authenticated;
 grant execute on function public.accept_chat_request(uuid) to authenticated;
