@@ -17,7 +17,8 @@ appId: com.ernestoho.nomadalingo
     timeout: 20000
 - tapOn: "000000"
 - inputText: "${OTP}"
-- hideKeyboard
+# No hideKeyboard: it is unreliable on the iOS simulator. AppScreen uses a
+# KeyboardAvoidingView, so "Continuar" is lifted above the software keyboard.
 - tapOn: "Continuar"
 # After a successful verify the route guard sends an already-onboarded profile
 # to the tab navigator, whose first tab is "Inicio".
