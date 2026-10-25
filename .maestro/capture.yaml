@@ -5,8 +5,6 @@ appId: com.ernestoho.nomadalingo
 # mint a *new* code and invalidate the one the workflow already fetched.
 - launchApp:
     clearState: true
-# DEEP_LINK is passed whole from the workflow so no interpolation happens inside
-# the URL string.
 - openLink: "${DEEP_LINK}"
 # iOS shows a system "Open in ...?" confirmation for custom schemes; the app is
 # only launched once this is accepted.
@@ -21,28 +19,29 @@ appId: com.ernestoho.nomadalingo
 # No hideKeyboard: it is unreliable on the iOS simulator. AppScreen uses a
 # KeyboardAvoidingView, so "Continuar" is lifted above the software keyboard.
 - tapOn: "Continuar"
-
-# Retry tolerance: a failed attempt leaves "Continuar" visible again, and the
-# OTP stays valid because a failed request never reached the server.
+# Home screen copy, used because the guard redirects an onboarded profile here.
 - extendedWaitUntil:
-    notVisible: "Verificando…"
-    timeout: 40000
-- runFlow:
-    when:
-      visible: "Continuar"
-    commands:
-      - tapOn: "Continuar"
-      - extendedWaitUntil:
-          notVisible: "Verificando…"
-          timeout: 40000
-- runFlow:
-    when:
-      visible: "Continuar"
-    commands:
-      - tapOn: "Continuar"
+    visible: "Conoce a la comunidad"
+    timeout: 60000
 
-# After a successful verify the route guard sends an already-onboarded profile
-# to the tab navigator, whose first tab is "Inicio".
-- extendedWaitUntil:
-    visible: "Inicio"
-    timeout: 40000
+# Navigation is done with tab taps rather than deep links: opening a custom
+# scheme from outside the app always raises the iOS confirmation dialog.
+# iOS reports tabs with their full accessibility label.
+- waitForAnimationToEnd
+- takeScreenshot: 01-inicio
+
+- tapOn: "Personas, tab, 3 of 5"
+- waitForAnimationToEnd
+- takeScreenshot: 02-personas
+
+- tapOn: "Eventos, tab, 2 of 5"
+- waitForAnimationToEnd
+- takeScreenshot: 03-eventos
+
+- tapOn: "Inbox, tab, 4 of 5"
+- waitForAnimationToEnd
+- takeScreenshot: 04-inbox
+
+- tapOn: "Perfil, tab, 5 of 5"
+- waitForAnimationToEnd
+- takeScreenshot: 05-perfil

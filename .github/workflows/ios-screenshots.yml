@@ -120,34 +120,22 @@ jobs:
           maestro test \
             -e DEEP_LINK="$DEEP_LINK" \
             -e OTP="${{ steps.otp.outputs.otp }}" \
-            .maestro/login.yaml
+            .maestro/capture.yaml
 
-      - name: Capture screenshots
+      - name: Collect screenshots
+        if: always()
         run: |
           set -euo pipefail
-          UDID="${{ steps.sim.outputs.udid }}"
           mkdir -p shots
-          shoot () {
-            local route="$1"
-            local name="$2"
-            if [ -n "$route" ]; then
-              xcrun simctl openurl "$UDID" "nomadalingo://$route" || true
-            fi
-            sleep 5
-            xcrun simctl io "$UDID" screenshot "shots/$name.png"
-            echo "captured $name"
-          }
-          sleep 5
-          shoot "" "01-inicio"
-          shoot "people" "02-personas"
-          shoot "person/d0000006-0000-4000-8000-000000000006" "03-persona"
-          shoot "events" "04-eventos"
-          shoot "event/afcf76c0-821f-46cc-b4a5-681a5ad0d747" "05-evento"
-          shoot "inbox" "06-inbox"
-          shoot "chat/${{ inputs.chat_id }}" "07-chat"
-          shoot "profile" "08-perfil"
+          find "$HOME/.maestro/tests" -name "*.png" -exec cp {} shots/ \; 2>/dev/null || true
+          find . -maxdepth 1 -name "*.png" -exec cp {} shots/ \; 2>/dev/null || true
           ls -la shots
-          for f in shots/*.png; do sips -g pixelWidth -g pixelHeight "$f" | tail -2; done
+          for f in shots/*.png; do
+            [ -e "$f" ] || continue
+            printf '%-24s ' "$(basename "$f")"
+            sips -g pixelWidth -g pixelHeight "$f" | tail -2 | tr -d '\n' | sed 's/  */ /g'
+            echo
+          done
 
       - name: Upload screenshots
         if: always()
