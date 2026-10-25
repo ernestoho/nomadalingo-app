@@ -49,7 +49,6 @@
     "heroui-native": "^1.0.4",
     "lucide-react-native": "^0.562.0",
     "pigeon-maps": "^0.22.1",
-    "posthog-js": "^1.396.2",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-hook-form": "~7.76.1",

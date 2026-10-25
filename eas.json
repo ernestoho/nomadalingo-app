@@ -15,6 +15,13 @@
       "autoIncrement": true,
       "environment": "preview"
     },
+    "simulator": {
+      "distribution": "internal",
+      "environment": "production",
+      "ios": {
+        "simulator": true
+      }
+    },
     "production": {
       "autoIncrement": true,
       "environment": "production"
