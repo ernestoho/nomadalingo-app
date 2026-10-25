@@ -109,7 +109,11 @@ jobs:
       - name: Sign in with Maestro
         run: |
           set -euo pipefail
-          maestro test -e EMAIL="${{ inputs.email }}" -e OTP="${{ steps.otp.outputs.otp }}" .maestro/login.yaml
+          DEEP_LINK="nomadalingo://verify?email=${{ inputs.email }}"
+          maestro test \
+            -e DEEP_LINK="$DEEP_LINK" \
+            -e OTP="${{ steps.otp.outputs.otp }}" \
+            .maestro/login.yaml
 
       - name: Capture screenshots
         run: |

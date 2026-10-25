@@ -5,8 +5,16 @@ appId: com.ernestoho.nomadalingo
 # mint a *new* code and invalidate the one the workflow already fetched.
 - launchApp:
     clearState: true
-- openLink: "nomadalingo://verify?email=${EMAIL}"
-- assertVisible: "Código de acceso"
+# DEEP_LINK is passed whole from the workflow so no interpolation happens inside
+# the URL string.
+- openLink: "${DEEP_LINK}"
+# iOS shows a system "Open in ...?" confirmation for custom schemes.
+- tapOn:
+    text: "Open"
+    optional: true
+- extendedWaitUntil:
+    visible: "Código de acceso"
+    timeout: 20000
 - tapOn: "000000"
 - inputText: "${OTP}"
 - hideKeyboard
