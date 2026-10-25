@@ -25,8 +25,12 @@ export default function VerifyScreen() {
   };
   const verify = async () => {
     if (isVerifying) return;
-    if (code.trim().length !== 6) {
-      showError(es ? 'Escribe el código de 6 dígitos.' : 'Enter the 6-digit code.');
+    // Supabase's OTP length is a project setting (6 by default, 8 on this
+    // project). Accept the full 6-8 digit range and let the server validate.
+    if (code.trim().length < 6) {
+      showError(
+        es ? 'Escribe el código que enviamos a tu correo.' : 'Enter the code we sent to your email.',
+      );
       return;
     }
     setIsVerifying(true);
@@ -67,14 +71,14 @@ export default function VerifyScreen() {
       </View>
       <Panel>
         <TextField isInvalid={Boolean(error)}>
-          <Label>{es ? 'Código de 6 dígitos' : '6-digit code'}</Label>
+          <Label>{es ? 'Código de acceso' : 'Access code'}</Label>
           <Input
             value={code}
-            onChangeText={(value) => setCode(value.replace(/\D/g, '').slice(0, 6))}
+            onChangeText={(value) => setCode(value.replace(/\D/g, '').slice(0, 8))}
             keyboardType="number-pad"
             autoComplete="one-time-code"
             textContentType="oneTimeCode"
-            maxLength={6}
+            maxLength={8}
             placeholder="000000"
             style={{
               fontFamily: BRAND_FONTS.bold,
@@ -91,7 +95,7 @@ export default function VerifyScreen() {
         <Action
           label={isVerifying ? (es ? 'Verificando…' : 'Verifying…') : es ? 'Continuar' : 'Continue'}
           onPress={() => void verify()}
-          disabled={isVerifying || code.length !== 6}
+          disabled={isVerifying || code.length < 6}
         />
       </Panel>
       <Action
