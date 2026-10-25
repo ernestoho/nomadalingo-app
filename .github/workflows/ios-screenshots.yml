@@ -66,27 +66,12 @@ jobs:
           xcrun simctl boot "$UDID" || true
           xcrun simctl bootstatus "$UDID" -b
 
-      - name: Safari trust probe
-        continue-on-error: true
-        run: |
-          set -x
-          UDID="${{ steps.sim.outputs.udid }}"
-          mkdir -p shots
-          xcrun simctl openurl "$UDID" "$SUPABASE_URL/rest/v1/"
-          sleep 15
-          xcrun simctl io "$UDID" screenshot shots/probe-safari.png
-          echo "probe captured"
-          xcrun simctl terminate "$UDID" com.apple.mobilesafari || true
-
       - name: Network probe
         continue-on-error: true
         run: |
           set -x
           curl -sS -o /dev/null -w "host_tcp=%{http_code} time=%{time_total}\n" \
             "$SUPABASE_URL/rest/v1/" || echo "host request failed"
-          xcrun simctl spawn booted /usr/bin/curl -sS -o /dev/null \
-            -w "simulator_tcp=%{http_code}\n" --max-time 25 "$SUPABASE_URL/rest/v1/" \
-            || echo "simulator curl unavailable or failed"
 
       - name: Install and first launch
         run: |
@@ -94,6 +79,20 @@ jobs:
           xcrun simctl install "${{ steps.sim.outputs.udid }}" "$APP_PATH"
           xcrun simctl launch "${{ steps.sim.outputs.udid }}" "$BUNDLE_ID"
           sleep 6
+
+      - name: Open verify screen via deep link
+        run: |
+          set -euo pipefail
+          UDID="${{ steps.sim.outputs.udid }}"
+          mkdir -p shots
+          # simctl openurl hands the URL straight to the app, avoiding the iOS
+          # "Open in ...?" confirmation that Maestro's openLink triggers.
+          xcrun simctl terminate "$UDID" "$BUNDLE_ID" || true
+          sleep 2
+          xcrun simctl openurl "$UDID" "nomadalingo://verify?email=${{ inputs.email }}"
+          sleep 6
+          xcrun simctl io "$UDID" screenshot shots/00-verify.png
+          echo "verify screen captured"
 
       - name: Install Maestro
         run: |

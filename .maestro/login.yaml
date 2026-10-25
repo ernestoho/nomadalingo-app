@@ -1,17 +1,8 @@
 appId: com.ernestoho.nomadalingo
 ---
-# Signs in as a throwaway demo account by deep-linking straight to the verify
-# screen, deliberately bypassing "Recibir código". Calling signInWithOtp would
-# mint a *new* code and invalidate the one the workflow already fetched.
-- launchApp:
-    clearState: true
-# DEEP_LINK is passed whole from the workflow so no interpolation happens inside
-# the URL string.
-- openLink: "${DEEP_LINK}"
-# iOS shows a system "Open in ...?" confirmation for custom schemes.
-- tapOn:
-    text: "Open"
-    optional: true
+# The workflow has already launched the app and handed it the deep link with
+# `simctl openurl` (which avoids the iOS "Open in ...?" confirmation dialog).
+# So this flow starts on the verify screen; there is no launchApp/openLink.
 - extendedWaitUntil:
     visible: "Código de acceso"
     timeout: 20000
@@ -21,10 +12,8 @@ appId: com.ernestoho.nomadalingo
 # KeyboardAvoidingView, so "Continuar" is lifted above the software keyboard.
 - tapOn: "Continuar"
 
-# The iOS 26 simulator tries HTTP/3 (QUIC) first and fails with NSURLError -1200
-# instead of falling back to TCP. The first failure appears to poison the QUIC
-# cache for the host, so retrying should land on TCP. The OTP survives a failed
-# attempt because the request never reached the server.
+# Retry tolerance: a failed attempt leaves "Continuar" visible again, and the
+# OTP stays valid because a failed request never reached the server.
 - extendedWaitUntil:
     notVisible: "Verificando…"
     timeout: 40000
@@ -41,12 +30,9 @@ appId: com.ernestoho.nomadalingo
       visible: "Continuar"
     commands:
       - tapOn: "Continuar"
-      - extendedWaitUntil:
-          notVisible: "Verificando…"
-          timeout: 40000
 
 # After a successful verify the route guard sends an already-onboarded profile
 # to the tab navigator, whose first tab is "Inicio".
 - extendedWaitUntil:
     visible: "Inicio"
-    timeout: 30000
+    timeout: 40000
