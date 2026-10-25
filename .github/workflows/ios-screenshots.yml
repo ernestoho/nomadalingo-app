@@ -87,40 +87,57 @@ jobs:
           curl -fsSL "https://get.maestro.mobile.dev" | bash
           echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
 
-      - name: Mint one-time code for demo account
-        id: otp
-        run: |
-          set -euo pipefail
-          RESPONSE=$(curl -fsS "$SUPABASE_URL/functions/v1/screenshot-login-temp?email=${{ inputs.email }}" \
-            -H "apikey: $SUPABASE_PUBLISHABLE_KEY")
-          OTP=$(printf '%s' "$RESPONSE" | node -e '
-            let raw = "";
-            process.stdin.on("data", (chunk) => { raw += chunk; });
-            process.stdin.on("end", () => {
-              let parsed;
-              try { parsed = JSON.parse(raw); } catch (err) {
-                console.error("Unparseable response:", raw);
-                process.exit(1);
-              }
-              if (!parsed.otp) {
-                console.error("No OTP in response:", JSON.stringify(parsed));
-                process.exit(1);
-              }
-              process.stdout.write(String(parsed.otp));
-            });
-          ')
-          echo "::add-mask::$OTP"
-          echo "otp=$OTP" >> "$GITHUB_OUTPUT"
-          echo "Minted a code of length ${#OTP}"
-
       - name: Sign in with Maestro
         run: |
           set -euo pipefail
           DEEP_LINK="nomadalingo://verify?email=${{ inputs.email }}"
-          maestro test \
-            -e DEEP_LINK="$DEEP_LINK" \
-            -e OTP="${{ steps.otp.outputs.otp }}" \
-            .maestro/login.yaml
+          OTP=""
+
+          mint_code () {
+            local response
+            response=$(curl -fsS "$SUPABASE_URL/functions/v1/screenshot-login-temp?email=${{ inputs.email }}" \
+              -H "apikey: $SUPABASE_PUBLISHABLE_KEY")
+            OTP=$(printf '%s' "$response" | node -e '
+              let raw = "";
+              process.stdin.on("data", (chunk) => { raw += chunk; });
+              process.stdin.on("end", () => {
+                let parsed;
+                try { parsed = JSON.parse(raw); } catch (err) {
+                  console.error("Unparseable response:", raw);
+                  process.exit(1);
+                }
+                if (!parsed.otp) {
+                  console.error("No OTP in response:", JSON.stringify(parsed));
+                  process.exit(1);
+                }
+                process.stdout.write(String(parsed.otp));
+              });
+            ')
+            echo "::add-mask::$OTP"
+            echo "Minted a code of length ${#OTP}"
+          }
+
+          # The simulator's networking drops the verify request now and then
+          # ("Network request failed") even though the host reaches Supabase
+          # fine. Each attempt mints a *fresh* code because a successful verify
+          # consumes the previous one.
+          for attempt in 1 2 3; do
+            echo "::group::Login attempt $attempt"
+            mint_code
+            if maestro test \
+                -e DEEP_LINK="$DEEP_LINK" \
+                -e OTP="$OTP" \
+                .maestro/login.yaml; then
+              echo "::endgroup::"
+              echo "Signed in on attempt $attempt"
+              exit 0
+            fi
+            echo "::endgroup::"
+            echo "Attempt $attempt failed; retrying"
+            sleep 5
+          done
+          echo "All login attempts failed" >&2
+          exit 1
 
       - name: Capture screenshots
         run: |
@@ -131,7 +148,11 @@ jobs:
           # pixels come from simctl and Maestro only drives navigation.
           xcrun simctl io "$UDID" screenshot shots/01-inicio.png
           shoot () {
-            maestro test -e TAB="$1" .maestro/tab.yaml
+            # Keep going after a failed tap so the run still yields a full
+            # contact sheet to review.
+            if ! maestro test -e TAB="$1" .maestro/tab.yaml; then
+              echo "WARN: could not tap \"$1\"" >&2
+            fi
             sleep 2
             xcrun simctl io "$UDID" screenshot "shots/$2.png"
           }
