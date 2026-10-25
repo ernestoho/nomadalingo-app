@@ -1,0 +1,18 @@
+appId: com.ernestoho.nomadalingo
+---
+# Signs in as a throwaway demo account by deep-linking straight to the verify
+# screen, deliberately bypassing "Recibir código". Calling signInWithOtp would
+# mint a *new* code and invalidate the one the workflow already fetched.
+- launchApp:
+    clearState: true
+- openLink: "nomadalingo://verify?email=${EMAIL}"
+- assertVisible: "Código de acceso"
+- tapOn: "000000"
+- inputText: "${OTP}"
+- hideKeyboard
+- tapOn: "Continuar"
+# After a successful verify the route guard sends an already-onboarded profile
+# to the tab navigator, whose first tab is "Inicio".
+- extendedWaitUntil:
+    visible: "Inicio"
+    timeout: 30000
