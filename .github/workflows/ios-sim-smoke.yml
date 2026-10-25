@@ -1,0 +1,69 @@
+name: iOS simulator smoke test
+
+# Temporary diagnostic workflow: proves that a GitHub-hosted macOS runner can
+# boot an iOS simulator and capture a screenshot. Safe to delete afterwards.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: macos-latest
+    timeout-minutes: 20
+    steps:
+      - name: Show toolchain
+        run: |
+          sw_vers
+          echo "--- xcodebuild ---"
+          xcodebuild -version
+          echo "--- installed Xcodes ---"
+          ls -1 /Applications | grep -i '^Xcode' || true
+          echo "--- xcode-select ---"
+          xcode-select -p
+
+      - name: List available simulators
+        run: |
+          xcrun simctl list runtimes
+          echo "---"
+          xcrun simctl list devices available | head -40
+
+      - name: Boot simulator and capture screenshot
+        run: |
+          set -euo pipefail
+          UDID=$(xcrun simctl list devices available -j | python3 -c '
+import json, sys
+data = json.load(sys.stdin)["devices"]
+for runtime, devices in sorted(data.items()):
+    if "iOS" not in runtime:
+        continue
+    for device in devices:
+        if "iPhone" in device["name"] and device.get("isAvailable", True):
+            print(device["udid"])
+            sys.exit(0)
+sys.exit(1)
+')
+          echo "Chosen simulator: $UDID"
+          xcrun simctl list devices | grep "$UDID" || true
+          xcrun simctl boot "$UDID" || true
+          xcrun simctl bootstatus "$UDID" -b
+          sleep 5
+          xcrun simctl io "$UDID" screenshot home.png
+          ls -la home.png
+          file home.png
+          python3 -c '
+import struct, sys
+with open("home.png", "rb") as fh:
+    head = fh.read(26)
+width, height = struct.unpack(">II", head[16:24])
+print(f"screenshot dimensions: {width}x{height}")
+'
+
+      - name: Upload screenshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: simulator-smoke-screenshot
+          path: home.png
+          if-no-files-found: error
