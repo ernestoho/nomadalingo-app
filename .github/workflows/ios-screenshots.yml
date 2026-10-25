@@ -80,20 +80,6 @@ jobs:
           xcrun simctl launch "${{ steps.sim.outputs.udid }}" "$BUNDLE_ID"
           sleep 6
 
-      - name: Open verify screen via deep link
-        run: |
-          set -euo pipefail
-          UDID="${{ steps.sim.outputs.udid }}"
-          mkdir -p shots
-          # simctl openurl hands the URL straight to the app, avoiding the iOS
-          # "Open in ...?" confirmation that Maestro's openLink triggers.
-          xcrun simctl terminate "$UDID" "$BUNDLE_ID" || true
-          sleep 2
-          xcrun simctl openurl "$UDID" "nomadalingo://verify?email=${{ inputs.email }}"
-          sleep 6
-          xcrun simctl io "$UDID" screenshot shots/00-verify.png
-          echo "verify screen captured"
-
       - name: Install Maestro
         run: |
           set -euo pipefail

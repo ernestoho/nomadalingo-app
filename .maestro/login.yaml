@@ -1,11 +1,21 @@
 appId: com.ernestoho.nomadalingo
 ---
-# The workflow has already launched the app and handed it the deep link with
-# `simctl openurl` (which avoids the iOS "Open in ...?" confirmation dialog).
-# So this flow starts on the verify screen; there is no launchApp/openLink.
+# Signs in as a throwaway demo account by deep-linking straight to the verify
+# screen, deliberately bypassing "Recibir código". Calling signInWithOtp would
+# mint a *new* code and invalidate the one the workflow already fetched.
+- launchApp:
+    clearState: true
+# DEEP_LINK is passed whole from the workflow so no interpolation happens inside
+# the URL string.
+- openLink: "${DEEP_LINK}"
+# iOS shows a system "Open in ...?" confirmation for custom schemes; the app is
+# only launched once this is accepted.
+- tapOn:
+    text: "Open"
+    optional: true
 - extendedWaitUntil:
     visible: "Código de acceso"
-    timeout: 20000
+    timeout: 25000
 - tapOn: "000000"
 - inputText: "${OTP}"
 # No hideKeyboard: it is unreliable on the iOS simulator. AppScreen uses a
