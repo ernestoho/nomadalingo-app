@@ -66,6 +66,16 @@ jobs:
           xcrun simctl boot "$UDID" || true
           xcrun simctl bootstatus "$UDID" -b
 
+      - name: Network probe
+        continue-on-error: true
+        run: |
+          set -x
+          curl -sS -o /dev/null -w "host_tcp=%{http_code} time=%{time_total}\n" \
+            "$SUPABASE_URL/rest/v1/" || echo "host request failed"
+          xcrun simctl spawn booted /usr/bin/curl -sS -o /dev/null \
+            -w "simulator_tcp=%{http_code}\n" --max-time 25 "$SUPABASE_URL/rest/v1/" \
+            || echo "simulator curl unavailable or failed"
+
       - name: Install and first launch
         run: |
           set -euo pipefail

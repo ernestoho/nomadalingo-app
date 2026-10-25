@@ -20,6 +20,31 @@ appId: com.ernestoho.nomadalingo
 # No hideKeyboard: it is unreliable on the iOS simulator. AppScreen uses a
 # KeyboardAvoidingView, so "Continuar" is lifted above the software keyboard.
 - tapOn: "Continuar"
+
+# The iOS 26 simulator tries HTTP/3 (QUIC) first and fails with NSURLError -1200
+# instead of falling back to TCP. The first failure appears to poison the QUIC
+# cache for the host, so retrying should land on TCP. The OTP survives a failed
+# attempt because the request never reached the server.
+- extendedWaitUntil:
+    notVisible: "Verificando…"
+    timeout: 40000
+- runFlow:
+    when:
+      visible: "Continuar"
+    commands:
+      - tapOn: "Continuar"
+      - extendedWaitUntil:
+          notVisible: "Verificando…"
+          timeout: 40000
+- runFlow:
+    when:
+      visible: "Continuar"
+    commands:
+      - tapOn: "Continuar"
+      - extendedWaitUntil:
+          notVisible: "Verificando…"
+          timeout: 40000
+
 # After a successful verify the route guard sends an already-onboarded profile
 # to the tab navigator, whose first tab is "Inicio".
 - extendedWaitUntil:
