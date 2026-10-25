@@ -18,6 +18,9 @@
     "simulator": {
       "distribution": "internal",
       "environment": "production",
+      "env": {
+        "EXPO_PUBLIC_USE_RN_FETCH": "1"
+      },
       "ios": {
         "simulator": true
       }
