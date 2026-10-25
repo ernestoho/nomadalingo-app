@@ -1,0 +1,7 @@
+appId: com.ernestoho.nomadalingo
+---
+# Taps a tab bar item. iOS reports tabs with their full accessibility label,
+# e.g. "Personas, tab, 3 of 5". Used to drive navigation between simctl
+# screenshots, because Maestro's own takeScreenshot double-draws text here.
+- tapOn: "${TAB}"
+- waitForAnimationToEnd

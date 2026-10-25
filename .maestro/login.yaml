@@ -23,25 +23,4 @@ appId: com.ernestoho.nomadalingo
 - extendedWaitUntil:
     visible: "Conoce a la comunidad"
     timeout: 60000
-
-# Navigation is done with tab taps rather than deep links: opening a custom
-# scheme from outside the app always raises the iOS confirmation dialog.
-# iOS reports tabs with their full accessibility label.
 - waitForAnimationToEnd
-- takeScreenshot: 01-inicio
-
-- tapOn: "Personas, tab, 3 of 5"
-- waitForAnimationToEnd
-- takeScreenshot: 02-personas
-
-- tapOn: "Eventos, tab, 2 of 5"
-- waitForAnimationToEnd
-- takeScreenshot: 03-eventos
-
-- tapOn: "Inbox, tab, 4 of 5"
-- waitForAnimationToEnd
-- takeScreenshot: 04-inbox
-
-- tapOn: "Perfil, tab, 5 of 5"
-- waitForAnimationToEnd
-- takeScreenshot: 05-perfil

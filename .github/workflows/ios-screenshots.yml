@@ -120,19 +120,28 @@ jobs:
           maestro test \
             -e DEEP_LINK="$DEEP_LINK" \
             -e OTP="${{ steps.otp.outputs.otp }}" \
-            .maestro/capture.yaml
+            .maestro/login.yaml
 
-      - name: Collect screenshots
-        if: always()
+      - name: Capture screenshots
         run: |
           set -euo pipefail
+          UDID="${{ steps.sim.outputs.udid }}"
           mkdir -p shots
-          find "$HOME/.maestro/tests" -name "*.png" -exec cp {} shots/ \; 2>/dev/null || true
-          find . -maxdepth 1 -name "*.png" -exec cp {} shots/ \; 2>/dev/null || true
+          # Maestro's takeScreenshot double-draws text on this simulator, so the
+          # pixels come from simctl and Maestro only drives navigation.
+          xcrun simctl io "$UDID" screenshot shots/01-inicio.png
+          shoot () {
+            maestro test -e TAB="$1" .maestro/tab.yaml
+            sleep 2
+            xcrun simctl io "$UDID" screenshot "shots/$2.png"
+          }
+          shoot "Personas, tab, 3 of 5" 02-personas
+          shoot "Eventos, tab, 2 of 5" 03-eventos
+          shoot "Inbox, tab, 4 of 5" 04-inbox
+          shoot "Perfil, tab, 5 of 5" 05-perfil
           ls -la shots
           for f in shots/*.png; do
-            [ -e "$f" ] || continue
-            printf '%-24s ' "$(basename "$f")"
+            printf '%-20s ' "$(basename "$f")"
             sips -g pixelWidth -g pixelHeight "$f" | tail -2 | tr -d '\n' | sed 's/  */ /g'
             echo
           done
