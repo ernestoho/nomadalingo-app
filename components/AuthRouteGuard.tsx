@@ -20,8 +20,32 @@ export function AuthRouteGuard({ children }: PropsWithChildren) {
   const isPublicAuthRoute = rootSegment === '(auth)' && !isOnboarding;
   const needsProfile = Boolean(user && (isPrivateRoute || isOnboarding || isPublicAuthRoute));
 
-  // The launch screen is public and remains visible until its continue button is pressed.
-  if (!rootSegment) return children;
+  // The launch screen stays visible until its button is pressed, but a member
+  // who has already finished onboarding should land on their home tab instead
+  // of being shown the welcome pitch on every cold start.
+  if (!rootSegment) {
+    if (isLoading) {
+      return (
+        <AppScreen>
+          <StateView loading message={es ? 'Preparando NómadaLingo…' : 'Preparing NómadaLingo…'} />
+        </AppScreen>
+      );
+    }
+    if (user) {
+      if (profile.isLoading) {
+        return (
+          <AppScreen>
+            <StateView
+              loading
+              message={es ? 'Preparando NómadaLingo…' : 'Preparing NómadaLingo…'}
+            />
+          </AppScreen>
+        );
+      }
+      if (profile.data?.onboarding_completed_at) return <Redirect href="/(tabs)" />;
+    }
+    return children;
+  }
 
   if (isLoading || (needsProfile && (profile.isLoading || (profile.error && profile.isFetching)))) {
     return (

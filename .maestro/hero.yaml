@@ -1,0 +1,10 @@
+appId: com.ernestoho.nomadalingo
+---
+# Clears the keychain so the welcome screen is shown. Run last: it signs the
+# demo account out, which every other capture depends on staying signed in.
+- launchApp:
+    clearState: true
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible: "Cualquier idioma"
+    timeout: 20000

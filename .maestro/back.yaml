@@ -1,0 +1,14 @@
+appId: com.ernestoho.nomadalingo
+---
+# Returns from a detail screen to the list that opened it. The edge swipe is
+# the primary gesture; the chevron tap is a fallback for when a scroll view
+# swallows the swipe. Both are harmless if only one of them lands.
+- swipe:
+    start: "1%,50%"
+    end: "90%,50%"
+    duration: 400
+- waitForAnimationToEnd
+- tapOn:
+    point: "6%,8%"
+    optional: true
+- waitForAnimationToEnd
