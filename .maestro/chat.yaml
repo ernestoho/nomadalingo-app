@@ -1,0 +1,5 @@
+appId: com.ernestoho.nomadalingo
+---
+# Opens the demo conversation so the chat screen can be captured.
+- tapOn: "Mateo Rivas"
+- waitForAnimationToEnd

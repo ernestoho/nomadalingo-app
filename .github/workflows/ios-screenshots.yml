@@ -144,25 +144,67 @@ jobs:
           set -euo pipefail
           UDID="${{ steps.sim.outputs.udid }}"
           mkdir -p shots
+
+          relaunch () {
+            xcrun simctl terminate "$UDID" "$BUNDLE_ID" >/dev/null 2>&1 || true
+            sleep 1
+            xcrun simctl launch "$UDID" "$BUNDLE_ID" >/dev/null
+            sleep 6
+          }
+
+          snap () {
+            sleep 2
+            xcrun simctl io "$UDID" screenshot "shots/$1.png"
+          }
+
           # Maestro's takeScreenshot double-draws text on this simulator, so the
           # pixels come from simctl and Maestro only drives navigation.
           xcrun simctl io "$UDID" screenshot shots/01-inicio.png
+
           shoot () {
             # Keep going after a failed tap so the run still yields a full
             # contact sheet to review.
             if ! maestro test -e TAB="$1" .maestro/tab.yaml; then
               echo "WARN: could not tap \"$1\"" >&2
             fi
-            sleep 2
-            xcrun simctl io "$UDID" screenshot "shots/$2.png"
+            snap "$2"
           }
           shoot "Personas, tab, 3 of 5" 02-personas
           shoot "Eventos, tab, 2 of 5" 03-eventos
           shoot "Inbox, tab, 4 of 5" 04-inbox
           shoot "Perfil, tab, 5 of 5" 05-perfil
+
+          # Detail screens live outside the tab navigator, so each one is
+          # reached from a fresh launch instead of relying on the back button.
+          gotoTab () {
+            if ! maestro test -e TAB="$1" .maestro/tab.yaml; then
+              echo "WARN: could not tap \"$1\"" >&2
+            fi
+          }
+
+          relaunch
+          gotoTab "Eventos, tab, 2 of 5"
+          if ! maestro test .maestro/event.yaml; then
+            echo "WARN: could not open the event card" >&2
+          fi
+          snap 06-evento
+
+          relaunch
+          gotoTab "Inbox, tab, 4 of 5"
+          if ! maestro test .maestro/chat.yaml; then
+            echo "WARN: could not open the conversation" >&2
+          fi
+          snap 07-chat
+
+          # Diagnostic: sign-in screen, to check its field rendering too.
+          if ! maestro test .maestro/auth.yaml; then
+            echo "WARN: could not clear the session" >&2
+          fi
+          snap 09-auth-diagnostico
+
           ls -la shots
           for f in shots/*.png; do
-            printf '%-20s ' "$(basename "$f")"
+            printf '%-24s ' "$(basename "$f")"
             sips -g pixelWidth -g pixelHeight "$f" | tail -2 | tr -d '\n' | sed 's/  */ /g'
             echo
           done

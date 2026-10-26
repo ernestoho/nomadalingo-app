@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
-import { FlatList, View } from 'react-native';
-import { Input, PressableFeedback } from 'heroui-native';
+import { FlatList, TextInput, View } from 'react-native';
+import { PressableFeedback } from 'heroui-native';
 import { ArrowUpRight, Search, Users } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -63,21 +63,31 @@ export default function PeopleScreen() {
               gap: 10,
               borderRadius: 18,
               backgroundColor: UI.surface,
-              paddingLeft: 16,
+              paddingHorizontal: 16,
+              minHeight: 56,
             }}
           >
             <Search color={UI.muted} size={20} />
-            <Input
+            <TextInput
               value={search}
               onChangeText={setSearch}
               placeholder={es ? 'Buscar nombre o idioma' : 'Search name or language'}
+              placeholderTextColor={UI.muted}
               accessibilityLabel={es ? 'Buscar personas' : 'Search people'}
+              returnKeyType="search"
+              autoCorrect={false}
+              clearButtonMode="while-editing"
               style={{
                 flex: 1,
                 minHeight: 56,
-                borderWidth: 0,
-                borderRadius: 18,
+                paddingHorizontal: 0,
+                paddingVertical: 0,
+                // Explicitly reset tracking: the field previously inherited a
+                // wide letter spacing that pushed the placeholder out of view.
+                letterSpacing: 0,
+                fontSize: 15,
                 fontFamily: BRAND_FONTS.body,
+                color: UI.ink,
               }}
             />
           </View>

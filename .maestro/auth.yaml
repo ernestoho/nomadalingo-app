@@ -1,0 +1,10 @@
+appId: com.ernestoho.nomadalingo
+---
+# Diagnostic only: launches with a cleared keychain so the sign-in screen is
+# shown, letting us confirm the email field renders its placeholder cleanly.
+- launchApp:
+    clearState: true
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible: "Ya tengo cuenta"
+    timeout: 20000

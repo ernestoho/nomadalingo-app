@@ -1,0 +1,5 @@
+appId: com.ernestoho.nomadalingo
+---
+# Opens the first event card so the event detail screen can be captured.
+- tapOn: "Café de idiomas"
+- waitForAnimationToEnd
