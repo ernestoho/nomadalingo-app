@@ -42,8 +42,24 @@ Then download the finished set to the Desktop with:
 The workflow signs in as a throwaway account by deep-linking straight to the
 code screen, so it never sends email. The code is minted by the
 `screenshot-login-temp` Edge Function, which only accepts
-`@nomadalingo.invalid` addresses. **Delete that function from Supabase once the
-screenshots are final** — it exists only for this pipeline.
+`@nomadalingo.invalid` addresses.
 
-The demo profiles, the conversation and the RSVP are removed together at the
-end of a capture cycle; nothing in the store listing depends on them.
+**Status: the demo accounts have been deleted.** The six profiles, the
+conversation with its messages, the pending message request and the event RSVP
+were removed after the screenshots above were captured. The three events were
+kept; their `created_by` is now `null` because the demo member who created them
+is gone.
+
+Re-capturing therefore needs, in order:
+
+1. Re-deploy `screenshot-login-temp` (it is deleted from the project once a
+   capture cycle is finished, so it cannot be left minting codes).
+2. Re-seed the demo profiles and conversation, or adjust `.maestro/chat.yaml`
+   and `.maestro/event.yaml` to target whatever content exists.
+3. Run the workflow, then download with `./scripts/fetch-screenshots.sh`.
+4. Delete the function and the demo accounts again.
+
+> Note: the function creates an account when the address does not exist yet, so
+> probing it after cleanup re-creates a stray member. Delete the function when
+> you are done rather than leaving it deployed.
+
