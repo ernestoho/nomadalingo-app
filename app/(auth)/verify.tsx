@@ -20,7 +20,23 @@ export default function VerifyScreen() {
   const [error, setError] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
   const showError = (message: string) => {
-    setError(message);
+    // Supabase reports these in English; translate the two people actually
+    // hit rather than showing raw server text in a Spanish-first app.
+    const offline = /network request failed|failed to fetch|fetch failed|timed out|socket/i.test(
+      message,
+    );
+    const badCode = /invalid|expired|token/i.test(message);
+    setError(
+      offline
+        ? es
+          ? 'No hay conexión. Revisa tu internet e inténtalo de nuevo.'
+          : 'No connection. Check your internet and try again.'
+        : badCode
+          ? es
+            ? 'El código no es válido o ha caducado. Pide uno nuevo.'
+            : 'That code is not valid or has expired. Request a new one.'
+          : message,
+    );
     void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
   };
   const verify = async () => {
