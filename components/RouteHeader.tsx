@@ -18,6 +18,9 @@ export function RouteHeader({
         options={{
           headerShown: true,
           title,
+          // Without this the back button borrows the previous screen's title,
+          // which for a tab route is the raw group name ("(tabs)").
+          headerBackButtonDisplayMode: 'minimal',
           headerStyle: { backgroundColor: background },
           headerTintColor: foreground,
           headerShadowVisible: false,
