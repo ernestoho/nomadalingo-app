@@ -20,7 +20,9 @@ appId: com.ernestoho.nomadalingo
 # KeyboardAvoidingView, so "Continuar" is lifted above the software keyboard.
 - tapOn: "Continuar"
 # Home screen copy, used because the guard redirects an onboarded profile here.
+# The generous timeout covers the in-app retries when the first verify request
+# dies in transit.
 - extendedWaitUntil:
     visible: "Conoce a la comunidad"
-    timeout: 60000
+    timeout: 120000
 - waitForAnimationToEnd
