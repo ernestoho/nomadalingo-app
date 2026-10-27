@@ -44,22 +44,30 @@ code screen, so it never sends email. The code is minted by the
 `screenshot-login-temp` Edge Function, which only accepts
 `@nomadalingo.invalid` addresses.
 
-**Status: the demo accounts have been deleted.** The six profiles, the
-conversation with its messages, the pending message request and the event RSVP
-were removed after the screenshots above were captured. The three events were
-kept; their `created_by` is now `null` because the demo member who created them
-is gone.
+**Status: the demo accounts have been deleted and the helper is disabled.** The
+six profiles, the conversation with its messages, the pending message request
+and the event RSVP were removed after the screenshots above were captured. The
+three events were kept; their `created_by` is now `null` because the demo member
+who created them is gone.
+
+The deployed `screenshot-login-temp` now answers `410 Gone`, so it cannot mint
+codes or create accounts. Its real source is kept in
+`supabase/functions/screenshot-login-temp/index.ts`; you can delete the function
+outright from the Supabase dashboard (Edge Functions → `screenshot-login-temp` →
+Delete) for a final tidy-up.
 
 Re-capturing therefore needs, in order:
 
-1. Re-deploy `screenshot-login-temp` (it is deleted from the project once a
-   capture cycle is finished, so it cannot be left minting codes).
+1. Re-deploy the helper from `supabase/functions/screenshot-login-temp`:
+   `npx supabase functions deploy screenshot-login-temp --no-verify-jwt`
 2. Re-seed the demo profiles and conversation, or adjust `.maestro/chat.yaml`
    and `.maestro/event.yaml` to target whatever content exists.
 3. Run the workflow, then download with `./scripts/fetch-screenshots.sh`.
-4. Delete the function and the demo accounts again.
+4. Delete the demo accounts and disable the helper again.
 
-> Note: the function creates an account when the address does not exist yet, so
-> probing it after cleanup re-creates a stray member. Delete the function when
-> you are done rather than leaving it deployed.
+> Note: the helper creates an account when the address does not exist yet, so
+> probing it after cleanup re-creates a stray member (which shows up in the
+> people directory with no name). Never leave it deployed between capture
+> cycles.
+
 
