@@ -1,10 +1,12 @@
 appId: com.ernestoho.nomadalingo
 ---
 # Opens the first event card so the event detail screen can be captured.
-# Tapping the venue line rather than the title: the title is also the card's
-# accessibility label, and Maestro resolves that to the card's outer frame,
-# which it taps without the press registering.
-- tapOn: "Café Terraza, Plaza San Juan"
+# The card is a single flattened accessibility element (its label is the event
+# title), so there is no inner text node to target and tapping by label does
+# not register the press. A point inside the card is deterministic for the
+# seeded data: the first card occupies the top third of the list.
+- tapOn:
+    point: "50%,25%"
 - waitForAnimationToEnd
 # "El plan" only exists on the event detail screen.
 - assertVisible: "El plan"
