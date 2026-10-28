@@ -68,6 +68,7 @@
       "firstName": "Ernesto",
       "lastName": "Ho",
       "email": "support@nomadalingo.com",
+      "phone": "+18296508431",
       "demoRequired": false,
       "notes": "NómadaLingo is a community app for digital nomads. The fastest way to review is Sign in with Apple, available on the welcome screen. Email sign-in sends a one-time code to the address you enter. After onboarding, events and member profiles are public content, so a new account can browse immediately. To reach the chat flow, send a message request from any profile; the conversation opens only after the recipient accepts. Reporting, blocking and in-app account deletion are available from Settings."
     }
