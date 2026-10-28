@@ -8,8 +8,9 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { router } from 'expo-router';
-import { Button, FieldError, Input, Label, TextField } from 'heroui-native';
+import { FieldError, Input, Label, TextField } from 'heroui-native';
 import { StatusBar } from 'expo-status-bar';
+import * as AppleAuthentication from 'expo-apple-authentication';
 import { ArrowRight, Mail } from 'lucide-react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
@@ -241,22 +242,21 @@ export default function SignInScreen() {
                   onPress={() => choose('signin')}
                 />
                 {Platform.OS === 'ios' ? (
-                  <Button
-                    variant="outline"
-                    isDisabled={Boolean(socialProvider)}
-                    onPress={() => void submitApple()}
-                    style={{ minHeight: 54, borderRadius: 18 }}
+                  <View
+                    pointerEvents={socialProvider ? 'none' : 'auto'}
+                    style={{ opacity: socialProvider ? 0.6 : 1 }}
                   >
-                    <Button.Label style={{ fontFamily: BRAND_FONTS.bold }}>
-                      {socialProvider
-                        ? es
-                          ? 'Conectando…'
-                          : 'Connecting…'
-                        : es
-                          ? 'Continuar con Apple'
-                          : 'Continue with Apple'}
-                    </Button.Label>
-                  </Button>
+                    {/* Apple's guidelines require their own button: the Apple logo
+                        plus the approved wording. A styled app button without the
+                        logo is a common App Review rejection. */}
+                    <AppleAuthentication.AppleAuthenticationButton
+                      buttonType={AppleAuthentication.AppleAuthenticationButtonType.CONTINUE}
+                      buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.WHITE_OUTLINE}
+                      cornerRadius={18}
+                      style={{ width: '100%', height: 54 }}
+                      onPress={() => void submitApple()}
+                    />
+                  </View>
                 ) : null}
                 {error ? <FieldError>{error}</FieldError> : null}
               </>
