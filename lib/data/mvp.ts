@@ -2,6 +2,7 @@ import type { Enums, Tables } from '@/lib/database.types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { supabase } from '@/lib/backend';
+import { CHECK_VIOLATION, ContentBlockedError } from '@/lib/content-policy';
 
 export type Profile = Tables<'profiles'>;
 export type Event = Tables<'events'>;
@@ -9,8 +10,11 @@ export type ChatRequest = Tables<'chat_requests'>;
 export type Conversation = Tables<'conversations'>;
 export type Message = Tables<'messages'>;
 
-function throwIfError(error: { message: string } | null) {
-  if (error) throw new Error(error.message);
+function throwIfError(error: { message: string; code?: string } | null) {
+  if (!error) return;
+  // A CHECK constraint rejected the text: it broke the community guidelines.
+  if (error.code === CHECK_VIOLATION) throw new ContentBlockedError();
+  throw new Error(error.message);
 }
 
 export function useProfile(userId?: string) {

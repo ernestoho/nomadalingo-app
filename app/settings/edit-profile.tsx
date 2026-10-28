@@ -10,6 +10,7 @@ import { StateView } from '@/components/StateView';
 import { useAuth } from '@/lib/auth';
 import { useMvpActions, useProfile } from '@/lib/data/mvp';
 import { useI18n } from '@/lib/i18n';
+import { errorText } from '@/lib/content-policy';
 import { BRAND_FONTS } from '@/lib/brand';
 
 export default function EditProfileScreen() {
@@ -47,11 +48,11 @@ export default function EditProfileScreen() {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (caught) {
       setError(
-        caught instanceof Error
-          ? caught.message
-          : es
-            ? 'No se pudo guardar tu perfil.'
-            : 'Could not save your profile.',
+        errorText(
+          caught,
+          es,
+          es ? 'No se pudo guardar tu perfil.' : 'Could not save your profile.',
+        ),
       );
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     }

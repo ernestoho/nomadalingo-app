@@ -19,6 +19,7 @@ import {
   type Message,
 } from '@/lib/data/mvp';
 import { useI18n } from '@/lib/i18n';
+import { errorText } from '@/lib/content-policy';
 import { BRAND_FONTS } from '@/lib/brand';
 import { useRefreshOnFocus } from '@/lib/useRefreshOnFocus';
 
@@ -71,11 +72,11 @@ export default function ChatScreen() {
     } catch (caught) {
       setBody(text);
       setError(
-        caught instanceof Error
-          ? caught.message
-          : es
-            ? 'No se pudo enviar el mensaje.'
-            : 'Could not send your message.',
+        errorText(
+          caught,
+          es,
+          es ? 'No se pudo enviar el mensaje.' : 'Could not send your message.',
+        ),
       );
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     }

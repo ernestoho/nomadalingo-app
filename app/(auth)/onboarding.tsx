@@ -11,6 +11,7 @@ import { router } from 'expo-router';
 import { useAuth } from '@/lib/auth';
 import { useMvpActions } from '@/lib/data/mvp';
 import { useI18n } from '@/lib/i18n';
+import { errorText } from '@/lib/content-policy';
 
 const LANGUAGES = ['Español', 'English', 'Français', 'Português'];
 
@@ -79,7 +80,13 @@ export default function OnboardingScreen() {
       router.replace('/(tabs)');
     } catch (caught) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      setError(caught instanceof Error ? caught.message : 'No se pudo guardar tu perfil.');
+      setError(
+        errorText(
+          caught,
+          language === 'es',
+          language === 'es' ? 'No se pudo guardar tu perfil.' : 'Could not save your profile.',
+        ),
+      );
     }
   };
 
