@@ -70,7 +70,7 @@
       "email": "support@nomadalingo.com",
       "phone": "+18296508431",
       "demoRequired": false,
-      "notes": "NómadaLingo is a community app for digital nomads. The fastest way to review is Sign in with Apple, available on the welcome screen. Email sign-in sends a one-time code to the address you enter. After onboarding, events and member profiles are public content, so a new account can browse immediately. To reach the chat flow, send a message request from any profile; the conversation opens only after the recipient accepts. Reporting, blocking and in-app account deletion are available from Settings."
+      "notes": "NómadaLingo is a community app for digital nomads. No demo credentials are required: tap 'Continue with Apple' on the welcome screen, or enter any email address you control and we send an 8-digit one-time code (no password).\n\nAfter a short onboarding (name, languages, 18+ confirmation) the app opens on a populated community: 7 member profiles with bios and language levels, and 3 upcoming events (meetup, language exchange, coworking). Events can be opened and joined in one tap.\n\nChat is request-based by design: open any profile, send a message request, and the conversation opens once the other member accepts.\n\nModeration and safety: messages, bios and display names are filtered server-side for objectionable language; every profile and message can be reported; any member can be blocked instantly; and account deletion is available in Settings. Support is at https://nomadalingoapp.expo.app/support.html and the privacy policy at https://nomadalingoapp.expo.app/privacy.html."
     }
   }
 }
